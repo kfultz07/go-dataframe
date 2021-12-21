@@ -16,6 +16,12 @@ type Row struct {
 	city      string
 	state     string
 	zipCode   string
+	netWorth  float64
+	debt      float64
+}
+
+func (x Row) actualWorth() float64 {
+	return x.netWorth - x.debt
 }
 
 var dataframe map[int]Row
@@ -25,7 +31,7 @@ func main() {
 	dataframe = make(map[int]Row)
 
 	// Open the CSV file
-	recordFile, err := os.Open("/Users/kevinfultz/Desktop/DumpBin/ActiveCasa.csv")
+	recordFile, err := os.Open("ActiveCasa.csv")
 	if err != nil {
 		fmt.Println("An error encountered ::", err)
 	}
@@ -54,9 +60,17 @@ func main() {
 		city := record[3]
 		state := record[4]
 		zipCode := record[5]
+		netWorth, err := strconv.ParseFloat(record[6], 64)
+		if err != nil {
+			fmt.Println("Couldn't convert to float")
+		}
+		debt, err := strconv.ParseFloat(record[7], 64)
+		if err != nil {
+			fmt.Println("Couldn't convert to float")
+		}
 
 		// Add to DataFrame
-		dataframe[i] = Row{firstName, lastName, address, city, state, zipCode}
+		dataframe[i] = Row{firstName, lastName, address, city, state, zipCode, netWorth, debt}
 	}
 
 	// Create New CSV file to write to
@@ -70,14 +84,17 @@ func main() {
 	defer w.Flush()
 
 	// Add the column headers
-	record := []string{"Key", "First Name", "Last Name", "Address", "City", "State", "Zip Code"}
+	record := []string{"Key", "First Name", "Last Name", "Address", "City", "State", "Zip Code", "Net Worth", "Debt", "Actual Worth"}
 	if err := w.Write(record); err != nil {
 		log.Fatalln("Error", err)
 	}
 
 	for key, x := range dataframe {
 		// Create the record and write to the CSV file
-		record := []string{strconv.Itoa(key), x.firstName, x.lastName, x.address, x.city, x.state, x.zipCode}
+		netWorthString := fmt.Sprintf("%f", x.netWorth)
+		debtString := fmt.Sprintf("%f", x.debt)
+		actualWorthString := fmt.Sprintf("%f", x.actualWorth())
+		record := []string{strconv.Itoa(key), x.firstName, x.lastName, x.address, x.city, x.state, x.zipCode, netWorthString, debtString, actualWorthString}
 		if err := w.Write(record); err != nil {
 			log.Fatalln("Error", err)
 		}

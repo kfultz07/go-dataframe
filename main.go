@@ -27,11 +27,14 @@ func (x Row) actualWorth() float64 {
 var dataframe map[int]Row
 
 func main() {
+	// File Path
+	path := "/Users/kevinfultz/desktop/goprojects/go-dataframe/"
+
 	// Create the map
 	dataframe = make(map[int]Row)
 
 	// Open the CSV file
-	recordFile, err := os.Open("ActiveCasa.csv")
+	recordFile, err := os.Open(path + "/ActiveCasa.csv")
 	if err != nil {
 		fmt.Println("An error encountered ::", err)
 	}
@@ -74,7 +77,7 @@ func main() {
 	}
 
 	// Create New CSV file to write to
-	file, err := os.Create("CasaResults.csv")
+	file, err := os.Create(path + "/CasaResults.csv")
 	defer file.Close()
 	if err != nil {
 		log.Fatalln("Failed to open file", err)

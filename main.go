@@ -47,7 +47,10 @@ func main() {
 	if err != nil {
 		fmt.Println("An error encountered ::", err)
 	}
-	fmt.Printf("Headers : %v \n", header)
+
+	for i, each := range header {
+		fmt.Println(i, each)
+	}
 
 	// Loop over records and add to DataFrame
 	for i := 0; ; i++ {

@@ -4,37 +4,43 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
-type Row struct {
-	firstName string
-	lastName  string
-	address   string
-	city      string
-	state     string
-	zipCode   string
-	netWorth  float64
-	debt      float64
+type Record struct {
+	data map[string]string
 }
 
-func (x Row) actualWorth() float64 {
-	return x.netWorth - x.debt
+func (x Record) convertToFloat(fieldName string) float64 {
+	// Converts the value from a string to float64
+	value, err := strconv.ParseFloat(x.data[fieldName], 64)
+	if err != nil {
+		fmt.Println("Could Not Convert to Float64")
+		os.Exit(0)
+	}
+	return value
 }
 
-var dataframe map[int]Row
+func (x Record) convertToDate(fieldName string) time.Time {
+	// Converts the value from a string to time.Time
+	value, err := time.Parse("2006-01-01", x.data[fieldName])
+	if err != nil {
+		fmt.Println("Could Not Convert to Date")
+		os.Exit(0)
+	}
+	return value
+}
 
-func main() {
-	// File Path
-	path := "/Users/kevinfultz/desktop/goprojects/go-dataframe/"
-
-	// Create the map
-	dataframe = make(map[int]Row)
+func createDataFrame(path, fileName string) (map[string]Record, []string) {
+	// 1. Read in file
+	// 2. Iterate over rows on CSV file and create Record objects
+	// 3. Store Records in a map
+	// 4. Returns the map with the records as well as an array of the column headers
 
 	// Open the CSV file
-	recordFile, err := os.Open(path + "/ActiveCasa.csv")
+	recordFile, err := os.Open(path + fileName)
 	if err != nil {
 		fmt.Println("An error encountered ::", err)
 	}
@@ -48,62 +54,44 @@ func main() {
 		fmt.Println("An error encountered ::", err)
 	}
 
+	// Print the headers
 	for i, each := range header {
 		fmt.Println(i, each)
 	}
 
-	// Loop over records and add to DataFrame
+	// Empty map to store struct objects
+	myRecords := make(map[string]Record)
+
+	// Loop over the records and create Record objects.
+	fmt.Println("\nBuilding DataFrame...")
 	for i := 0; ; i++ {
 		record, err := reader.Read()
 		if err == io.EOF {
-			break // reached end of the file
+			break // Reached end of file
 		} else if err != nil {
-			fmt.Println("An error encountered ::", err)
+			fmt.Println("Error")
 		}
-		firstName := record[0]
-		lastName := record[1]
-		address := record[2]
-		city := record[3]
-		state := record[4]
-		zipCode := record[5]
-		netWorth, err := strconv.ParseFloat(record[6], 64)
-		if err != nil {
-			fmt.Println("Couldn't convert to float")
-		}
-		debt, err := strconv.ParseFloat(record[7], 64)
-		if err != nil {
-			fmt.Println("Couldn't convert to float")
+		// Create the new Record
+		x := Record{make(map[string]string)}
+
+		// Loop over columns and dynamically add column data for each header
+		for i, each := range header {
+			x.data[each] = record[i]
 		}
 
-		// Add to DataFrame
-		dataframe[i] = Row{firstName, lastName, address, city, state, zipCode, netWorth, debt}
+		// Add Record object to map
+		myRecords[x.data["Bill of Lading"]] = x
 	}
+	fmt.Println("\nDataFrame Ready")
+	return myRecords, header
+}
 
-	// Create New CSV file to write to
-	file, err := os.Create(path + "/CasaResults.csv")
-	defer file.Close()
-	if err != nil {
-		log.Fatalln("Failed to open file", err)
-	}
+func main() {
+	// File Path
+	path := "/Users/kevinfultz/Desktop/HomeBase/Dashboards/"
+	fileName := "Flat World Dashboard Database.csv"
 
-	w := csv.NewWriter(file)
-	defer w.Flush()
+	myRecords, headers := createDataFrame(path, fileName)
 
-	// Add the column headers
-	record := []string{"Key", "First Name", "Last Name", "Address", "City", "State", "Zip Code", "Net Worth", "Debt", "Actual Worth"}
-	if err := w.Write(record); err != nil {
-		log.Fatalln("Error", err)
-	}
-
-	for key, x := range dataframe {
-		// Create the record and write to the CSV file
-		netWorthString := fmt.Sprintf("%f", x.netWorth)
-		debtString := fmt.Sprintf("%f", x.debt)
-		actualWorthString := fmt.Sprintf("%f", x.actualWorth())
-		record := []string{strconv.Itoa(key), x.firstName, x.lastName, x.address, x.city, x.state, x.zipCode, netWorthString, debtString, actualWorthString}
-		if err := w.Write(record); err != nil {
-			log.Fatalln("Error", err)
-		}
-	}
-	fmt.Println("\nComplete")
+	fmt.Println(len(myRecords), headers)
 }

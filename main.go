@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -42,7 +44,8 @@ func createDataFrame(path, fileName string) (map[string]Record, []string) {
 	// Open the CSV file
 	recordFile, err := os.Open(path + fileName)
 	if err != nil {
-		fmt.Println("An error encountered ::", err)
+		fmt.Println("Error opening the file. Please ensure the path and filename are correct.")
+		os.Exit(0)
 	}
 
 	// Setup the reader
@@ -51,13 +54,26 @@ func createDataFrame(path, fileName string) (map[string]Record, []string) {
 	// Read the records
 	header, err := reader.Read()
 	if err != nil {
-		fmt.Println("An error encountered ::", err)
+		fmt.Println("Error reading the records")
+		os.Exit(0)
 	}
 
-	// Print the headers
+	// List all found headers as guide to establish key field
 	for i, each := range header {
 		fmt.Println(i, each)
 	}
+
+	// User input for key field
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Printf("Key Field: ")
+	scanner.Scan()
+	keyFieldString := scanner.Text()
+	keyField, err := strconv.Atoi(keyFieldString)
+	if err != nil {
+		fmt.Println("Unknown Key Field")
+		os.Exit(0)
+	}
+	selectedKey := header[keyField]
 
 	// Empty map to store struct objects
 	myRecords := make(map[string]Record)
@@ -80,16 +96,28 @@ func createDataFrame(path, fileName string) (map[string]Record, []string) {
 		}
 
 		// Add Record object to map
-		myRecords[x.data["Bill of Lading"]] = x
+		myRecords[x.data[selectedKey]] = x
 	}
 	fmt.Println("\nDataFrame Ready")
 	return myRecords, header
 }
 
 func main() {
-	// File Path
-	path := "/Users/kevinfultz/Desktop/HomeBase/Dashboards/"
-	fileName := "Flat World Dashboard Database.csv"
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Printf("Path: ")
+	scanner.Scan()
+	path := scanner.Text()
+	fmt.Printf("File Name: ")
+	scanner.Scan()
+	fileName := scanner.Text()
+
+	// Check user entries
+	if path[len(path)-1:] != "/" {
+		path = path + "/"
+	}
+	if strings.Contains(fileName, ".csv") != true {
+		fileName = fileName + ".csv"
+	}
 
 	myRecords, headers := createDataFrame(path, fileName)
 

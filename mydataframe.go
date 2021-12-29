@@ -1,7 +1,6 @@
-package main
+package dataframe
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -15,7 +14,7 @@ type Record struct {
 	data map[string]string
 }
 
-func (x Record) convertToFloat(fieldName string) float64 {
+func (x Record) ConvertToFloat(fieldName string) float64 {
 	// Converts the value from a string to float64
 	value, err := strconv.ParseFloat(x.data[fieldName], 64)
 	if err != nil {
@@ -25,9 +24,9 @@ func (x Record) convertToFloat(fieldName string) float64 {
 	return value
 }
 
-func (x Record) convertToDate(fieldName string) time.Time {
+func (x Record) ConvertToDate(fieldName string) time.Time {
 	// Converts the value from a string to time.Time
-	value, err := time.Parse("2006-01-01", x.data[fieldName])
+	value, err := time.Parse("2006-01-02", x.data[fieldName])
 	if err != nil {
 		fmt.Println("Could Not Convert to Date")
 		os.Exit(0)
@@ -35,7 +34,14 @@ func (x Record) convertToDate(fieldName string) time.Time {
 	return value
 }
 
-func createDataFrame(path, fileName string) (map[string]Record, []string) {
+func CreateDataFrame(path, fileName string) (map[string]Record, []string) {
+	// Check user entries
+	if path[len(path)-1:] != "/" {
+		path = path + "/"
+	}
+	if strings.Contains(fileName, ".csv") != true {
+		fileName = fileName + ".csv"
+	}
 	// 1. Read in file
 	// 2. Iterate over rows on CSV file and create Record objects
 	// 3. Store Records in a map
@@ -58,21 +64,14 @@ func createDataFrame(path, fileName string) (map[string]Record, []string) {
 		os.Exit(0)
 	}
 
-	// List all found headers as guide to establish key field
+	// Assign BOL as the key
+	var keyField int
 	for i, each := range header {
-		fmt.Println(i, each)
+		if each == "Bill of Lading" {
+			keyField = i
+		}
 	}
 
-	// User input for key field
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("Key Field: ")
-	scanner.Scan()
-	keyFieldString := scanner.Text()
-	keyField, err := strconv.Atoi(keyFieldString)
-	if err != nil {
-		fmt.Println("Unknown Key Field")
-		os.Exit(0)
-	}
 	selectedKey := header[keyField]
 
 	// Empty map to store struct objects
@@ -100,26 +99,4 @@ func createDataFrame(path, fileName string) (map[string]Record, []string) {
 	}
 	fmt.Println("\nDataFrame Ready")
 	return myRecords, header
-}
-
-func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("Path: ")
-	scanner.Scan()
-	path := scanner.Text()
-	fmt.Printf("File Name: ")
-	scanner.Scan()
-	fileName := scanner.Text()
-
-	// Check user entries
-	if path[len(path)-1:] != "/" {
-		path = path + "/"
-	}
-	if strings.Contains(fileName, ".csv") != true {
-		fileName = fileName + ".csv"
-	}
-
-	myRecords, headers := createDataFrame(path, fileName)
-
-	fmt.Println(len(myRecords), headers)
 }

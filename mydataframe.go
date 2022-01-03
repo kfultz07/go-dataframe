@@ -48,9 +48,11 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 	var keyField int
 	var keyFound bool
 	for i, each := range header {
+		fmt.Println(each, assignedKeyField)
 		if each == assignedKeyField {
 			keyField = i
 			keyFound = true
+			fmt.Println(keyFound)
 		}
 	}
 

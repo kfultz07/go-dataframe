@@ -14,7 +14,7 @@ type Record struct {
 	data map[string]string
 }
 
-func CreateDataFrame(path, fileName string) (map[string]Record, []string) {
+func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record, []string) {
 	// Check user entries
 	if path[len(path)-1:] != "/" {
 		path = path + "/"
@@ -44,12 +44,20 @@ func CreateDataFrame(path, fileName string) (map[string]Record, []string) {
 		os.Exit(0)
 	}
 
-	// Assign BOL as the key
+	// Assign the key field
 	var keyField int
+	var keyFound bool
 	for i, each := range header {
-		if each == "Bill of Lading" {
+		if each == assignedKeyField {
 			keyField = i
+			keyFound = true
 		}
+	}
+
+	// Alert user if key was not found
+	if keyFound != true {
+		fmt.Println("The specified key field was not found. Please review.")
+		os.Exit(0)
 	}
 
 	selectedKey := header[keyField]

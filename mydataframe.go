@@ -81,6 +81,10 @@ func CreateDataFrame(path, fileName string) (map[string]Record, []string) {
 	return myRecords, header
 }
 
+func (x Record) Val(fieldName string) string {
+	return x.data[fieldName]
+}
+
 func (x Record) ConvertToFloat(fieldName string) float64 {
 	// Converts the value from a string to float64
 	value, err := strconv.ParseFloat(x.data[fieldName], 64)

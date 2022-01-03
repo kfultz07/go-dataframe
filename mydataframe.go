@@ -82,6 +82,7 @@ func CreateDataFrame(path, fileName string) (map[string]Record, []string) {
 }
 
 func (x Record) Val(fieldName string) string {
+	// Return the value of the specified field
 	return x.data[fieldName]
 }
 

@@ -1,4 +1,4 @@
-package dataframe
+package main
 
 import (
 	"encoding/csv"
@@ -12,26 +12,6 @@ import (
 
 type Record struct {
 	data map[string]string
-}
-
-func (x Record) ConvertToFloat(fieldName string) float64 {
-	// Converts the value from a string to float64
-	value, err := strconv.ParseFloat(x.data[fieldName], 64)
-	if err != nil {
-		fmt.Println("Could Not Convert to Float64")
-		os.Exit(0)
-	}
-	return value
-}
-
-func (x Record) ConvertToDate(fieldName string) time.Time {
-	// Converts the value from a string to time.Time
-	value, err := time.Parse("2006-01-02", x.data[fieldName])
-	if err != nil {
-		fmt.Println("Could Not Convert to Date")
-		os.Exit(0)
-	}
-	return value
 }
 
 func CreateDataFrame(path, fileName string) (map[string]Record, []string) {
@@ -99,4 +79,24 @@ func CreateDataFrame(path, fileName string) (map[string]Record, []string) {
 	}
 	fmt.Println("\nDataFrame Ready")
 	return myRecords, header
+}
+
+func (x Record) ConvertToFloat(fieldName string) float64 {
+	// Converts the value from a string to float64
+	value, err := strconv.ParseFloat(x.data[fieldName], 64)
+	if err != nil {
+		fmt.Println("Could Not Convert to Float64")
+		os.Exit(0)
+	}
+	return value
+}
+
+func (x Record) ConvertToDate(fieldName string) time.Time {
+	// Converts the value from a string to time.Time
+	value, err := time.Parse("2006-01-02", x.data[fieldName])
+	if err != nil {
+		fmt.Println("Could Not Convert to Date")
+		os.Exit(0)
+	}
+	return value
 }

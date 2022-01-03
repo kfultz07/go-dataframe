@@ -1,4 +1,4 @@
-package main
+package dataframe
 
 import (
 	"encoding/csv"

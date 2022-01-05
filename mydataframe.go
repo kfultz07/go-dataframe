@@ -14,6 +14,7 @@ type Record struct {
 	data map[string]string
 }
 
+// Convert back to Upper Case
 func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record, []string) {
 	// Check user entries
 	if path[len(path)-1:] != "/" {
@@ -47,13 +48,11 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 	// Assign the key field
 	var keyField int
 	var keyFound bool
-	fmt.Println(keyFound)
+	fmt.Println(keyField, keyFound)
 	for i, each := range header {
-		fmt.Println(each, len(each), assignedKeyField, len(assignedKeyField))
-		if each == assignedKeyField {
+		if strings.Contains(each, assignedKeyField) {
 			keyField = i
 			keyFound = true
-			fmt.Println(keyFound)
 		}
 	}
 

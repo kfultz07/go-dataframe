@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+func calculate(numOne, numTwo int64) int64 {
+	return numOne + numTwo
+}
+
 type Record struct {
 	data map[string]string
 }
@@ -104,7 +108,17 @@ func (x Record) ConvertToFloat(fieldName string) float64 {
 	// Converts the value from a string to float64
 	value, err := strconv.ParseFloat(x.data[fieldName], 64)
 	if err != nil {
-		fmt.Println("Could Not Convert to Float64")
+		fmt.Println("Could Not Convert to float64")
+		os.Exit(0)
+	}
+	return value
+}
+
+func (x Record) ConvertToInt(fieldName string) int64 {
+	// Converts the value from a string to int64
+	value, err := strconv.ParseInt(x.data[fieldName], 0, 64)
+	if err != nil {
+		fmt.Println("Could Not Convert to int64")
 		os.Exit(0)
 	}
 	return value

@@ -16,6 +16,8 @@ type Record struct {
 
 // Convert back to Upper Case
 func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record, []string) {
+	start := time.Now() // Execution start time
+
 	// Check user entries
 	if path[len(path)-1:] != "/" {
 		path = path + "/"
@@ -48,7 +50,6 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 	// Assign the key field
 	var keyField int
 	var keyFound bool
-	fmt.Println(keyField, keyFound)
 	for i, each := range header {
 		if strings.Contains(each, assignedKeyField) {
 			keyField = i
@@ -87,7 +88,10 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 		// Add Record object to map
 		myRecords[x.data[selectedKey]] = x
 	}
-	fmt.Println("\nDataFrame Ready")
+
+	elapsed := time.Since(start) // Calculate elapsed execution time
+
+	fmt.Printf("DataFrame Ready\nExecution Time: %s", elapsed)
 	return myRecords, header
 }
 
@@ -111,6 +115,7 @@ func (x Record) ConvertToDate(fieldName string) time.Time {
 	value, err := time.Parse("2006-01-02", x.data[fieldName])
 	if err != nil {
 		fmt.Println("Could Not Convert to Date")
+
 		os.Exit(0)
 	}
 	return value

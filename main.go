@@ -150,6 +150,11 @@ func (x Record) Val(fieldName string) string {
 	return x.data[fieldName]
 }
 
+func (x Record) Update(fieldName, value string) {
+	// Update the value in a specified field
+	x.data[fieldName] = value
+}
+
 func (x Record) ConvertToFloat(fieldName string) float64 {
 	// Converts the value from a string to float64
 	value, err := strconv.ParseFloat(x.data[fieldName], 64)

@@ -107,6 +107,8 @@ func NewField(df map[string]Record, headers []string, fieldName string) (map[str
 }
 
 func SaveDataFrame(df map[string]Record, headers []string, fileName string, path string) bool {
+	start := time.Now() // Execution start time
+
 	// Create the csv file
 	csvFile, err := os.Create(path + fileName + ".csv")
 	defer csvFile.Close()
@@ -135,6 +137,10 @@ func SaveDataFrame(df map[string]Record, headers []string, fileName string, path
 		data = append(data, row)
 	}
 	w.WriteAll(data)
+
+	elapsed := time.Since(start) // Calculate elapsed execution time
+
+	fmt.Printf("DataFrame Saved\nExecution Time: %s", elapsed)
 
 	return true
 }

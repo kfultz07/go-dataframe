@@ -10,10 +10,6 @@ import (
 	"time"
 )
 
-func calculate(numOne, numTwo int64) int64 {
-	return numOne + numTwo
-}
-
 type Record struct {
 	data map[string]string
 }
@@ -99,6 +95,50 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 	return myRecords, header
 }
 
+func NewField(df map[string]Record, headers []string, fieldName string) (map[string]Record, []string) {
+	// Creates a new field with an empty string value.
+	// Must pass in the original DataFrame as well as header slice.
+	// Returns a tuple with new DataFrame and headers.
+	for _, row := range df {
+		row.data[fieldName] = ""
+	}
+	headers = append(headers, fieldName)
+	return df, headers
+}
+
+func SaveDataFrame(df map[string]Record, headers []string, fileName string, path string) bool {
+	// Create the csv file
+	csvFile, err := os.Create(path + fileName + ".csv")
+	defer csvFile.Close()
+	if err != nil {
+		fmt.Println("Error Creating CSV file")
+		return false
+	}
+
+	w := csv.NewWriter(csvFile)
+	defer w.Flush()
+
+	var data [][]string
+	var row []string
+
+	// Write headers to top of file
+	for _, header := range headers {
+		row = append(row, header)
+	}
+	data = append(data, row)
+
+	for _, record := range df {
+		var row []string
+		for _, header := range headers {
+			row = append(row, record.data[header])
+		}
+		data = append(data, row)
+	}
+	w.WriteAll(data)
+
+	return true
+}
+
 func (x Record) Val(fieldName string) string {
 	// Return the value of the specified field
 	return x.data[fieldName]
@@ -133,4 +173,9 @@ func (x Record) ConvertToDate(fieldName string) time.Time {
 		os.Exit(0)
 	}
 	return value
+}
+
+func cwt(cost, weight float64) string {
+	result := cost / (weight / 100)
+	return strconv.FormatFloat(result, 'E', -1, 64)
 }

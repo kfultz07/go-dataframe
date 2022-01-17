@@ -91,7 +91,7 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 
 	elapsed := time.Since(start) // Calculate elapsed execution time
 
-	fmt.Printf("DataFrame Ready\nExecution Time: %s", elapsed)
+	fmt.Printf("\nDataFrame Ready\nExecution Time: %s", elapsed)
 	return myRecords, header
 }
 
@@ -140,7 +140,7 @@ func SaveDataFrame(df map[string]Record, headers []string, fileName string, path
 
 	elapsed := time.Since(start) // Calculate elapsed execution time
 
-	fmt.Printf("DataFrame Saved\nExecution Time: %s", elapsed)
+	fmt.Printf("\nDataFrame Saved\nExecution Time: %s", elapsed)
 
 	return true
 }

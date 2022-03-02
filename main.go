@@ -14,7 +14,7 @@ type Record struct {
 	data map[string]string
 }
 
-// Convert back to Upper Case
+// Create a new DataFrame using a specified CSV file.
 func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record, []string) {
 	start := time.Now() // Execution start time
 
@@ -95,17 +95,33 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 	return myRecords, header
 }
 
-func NewField(df map[string]Record, headers []string, fieldName string) (map[string]Record, []string) {
-	// Creates a new field with an empty string value.
-	// Must pass in the original DataFrame as well as header slice.
-	// Returns a tuple with new DataFrame and headers.
+// Creates a new field and assigns it the provided value.
+// Must pass in the original DataFrame as well as header slice.
+// Returns a tuple with new DataFrame and headers.
+func NewField(df map[string]Record, headers []string, fieldName string, value string) (map[string]Record, []string) {
 	for _, row := range df {
-		row.data[fieldName] = ""
+		row.data[fieldName] = value
 	}
 	headers = append(headers, fieldName)
 	return df, headers
 }
 
+// Concatenate two DataFrames.
+// Frame must both contain the same headers.
+// Only unique records will be added to the original frame based on the Assigned Key.
+func ConcatFrames(dfOrig map[string]Record, dfNew map[string]Record, assignedKey string) (map[string]Record, bool) {
+	for _, row := range dfNew {
+		_, ok := dfOrig[row.data[assignedKey]].data[assignedKey]
+		if ok {
+			fmt.Println("Duplicate record found in both frames.")
+			return dfOrig, false
+		}
+		dfOrig[row.data[assignedKey]] = row
+	}
+	return dfOrig, true
+}
+
+// Save a provided DataFrame to disk.
 func SaveDataFrame(df map[string]Record, headers []string, fileName string, path string) bool {
 	start := time.Now() // Execution start time
 
@@ -184,9 +200,4 @@ func (x Record) ConvertToDate(fieldName string) time.Time {
 		os.Exit(0)
 	}
 	return value
-}
-
-func cwt(cost, weight float64) string {
-	result := cost / (weight / 100)
-	return strconv.FormatFloat(result, 'E', -1, 64)
 }

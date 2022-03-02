@@ -95,12 +95,12 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 	return myRecords, header
 }
 
-// Creates a new field and assigns it the provided value.
+// Creates a new field and assigns it an empty string.
 // Must pass in the original DataFrame as well as header slice.
 // Returns a tuple with new DataFrame and headers.
-func NewField(df map[string]Record, headers []string, fieldName string, value string) (map[string]Record, []string) {
+func NewField(df map[string]Record, headers []string, fieldName string) (map[string]Record, []string) {
 	for _, row := range df {
-		row.data[fieldName] = value
+		row.data[fieldName] = ""
 	}
 	headers = append(headers, fieldName)
 	return df, headers

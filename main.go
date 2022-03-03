@@ -14,8 +14,8 @@ type Record struct {
 	data map[string]string
 }
 
-// Create a new DataFrame using a specified CSV file.
-func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record, []string) {
+// Convert back to Upper Case
+func CreateDataFrame(path, fileName string) (map[int]Record, []string) {
 	start := time.Now() // Execution start time
 
 	// Check user entries
@@ -47,26 +47,8 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 		os.Exit(0)
 	}
 
-	// Assign the key field
-	var keyField int
-	var keyFound bool
-	for i, each := range header {
-		if strings.Contains(each, assignedKeyField) {
-			keyField = i
-			keyFound = true
-		}
-	}
-
-	// Alert user if key was not found
-	if keyFound != true {
-		fmt.Println("The specified key field was not found. Please review.")
-		os.Exit(0)
-	}
-
-	selectedKey := header[keyField]
-
 	// Empty map to store struct objects
-	myRecords := make(map[string]Record)
+	myRecords := make(map[int]Record)
 
 	// Loop over the records and create Record objects.
 	fmt.Println("\nBuilding DataFrame...")
@@ -81,12 +63,12 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 		x := Record{make(map[string]string)}
 
 		// Loop over columns and dynamically add column data for each header
-		for i, each := range header {
-			x.data[each] = record[i]
+		for pos, each := range header {
+			x.data[each] = record[pos]
 		}
 
 		// Add Record object to map
-		myRecords[x.data[selectedKey]] = x
+		myRecords[i] = x
 	}
 
 	elapsed := time.Since(start) // Calculate elapsed execution time
@@ -95,10 +77,10 @@ func CreateDataFrame(path, fileName, assignedKeyField string) (map[string]Record
 	return myRecords, header
 }
 
-// Creates a new field and assigns it an empty string.
-// Must pass in the original DataFrame as well as header slice.
-// Returns a tuple with new DataFrame and headers.
-func NewField(df map[string]Record, headers []string, fieldName string) (map[string]Record, []string) {
+func NewField(df map[int]Record, headers []string, fieldName string) (map[int]Record, []string) {
+	// Creates a new field and assigns it the provided value.
+	// Must pass in the original DataFrame as well as header slice.
+	// Returns a tuple with new DataFrame and headers.
 	for _, row := range df {
 		row.data[fieldName] = ""
 	}
@@ -106,23 +88,25 @@ func NewField(df map[string]Record, headers []string, fieldName string) (map[str
 	return df, headers
 }
 
-// Concatenate two DataFrames.
-// Frame must both contain the same headers.
-// Only unique records will be added to the original frame based on the Assigned Key.
-func ConcatFrames(dfOrig map[string]Record, dfNew map[string]Record, assignedKey string) (map[string]Record, bool) {
-	for _, row := range dfNew {
-		_, ok := dfOrig[row.data[assignedKey]].data[assignedKey]
-		if ok {
-			fmt.Println("Duplicate record found in both frames.")
-			return dfOrig, false
+func ConcatFrames(dfOrig map[int]Record, dfNew map[int]Record, headers []string) map[int]Record {
+	keyStart := len(dfOrig)
+
+	// Iterate over new dataframe in order
+	for i := 0; i < len(dfNew); i++ {
+		// Create new Record
+		x := Record{make(map[string]string)}
+
+		// Iterate over headers and add data to Record
+		for _, header := range headers {
+			x.data[header] = dfNew[i].Val(header)
 		}
-		dfOrig[row.data[assignedKey]] = row
+		dfOrig[keyStart] = x
+		keyStart++
 	}
-	return dfOrig, true
+	return dfOrig
 }
 
-// Save a provided DataFrame to disk.
-func SaveDataFrame(df map[string]Record, headers []string, fileName string, path string) bool {
+func SaveDataFrame(df map[int]Record, headers []string, fileName string, path string) bool {
 	start := time.Now() // Execution start time
 
 	// Create the csv file
@@ -145,13 +129,15 @@ func SaveDataFrame(df map[string]Record, headers []string, fileName string, path
 	}
 	data = append(data, row)
 
-	for _, record := range df {
+	// Iterate over map by order of index or keys.
+	for i := 0; i < len(df); i++ {
 		var row []string
 		for _, header := range headers {
-			row = append(row, record.data[header])
+			row = append(row, df[i].data[header])
 		}
 		data = append(data, row)
 	}
+
 	w.WriteAll(data)
 
 	elapsed := time.Since(start) // Calculate elapsed execution time

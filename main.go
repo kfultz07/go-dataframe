@@ -14,8 +14,13 @@ type Record struct {
 	data map[string]string
 }
 
+type DataFrame struct {
+	myRecords map[int]Record
+	headers   []string
+}
+
 // Convert back to Upper Case
-func CreateDataFrame(path, fileName string) (map[int]Record, []string) {
+func CreateDataFrame(path, fileName string) DataFrame {
 	start := time.Now() // Execution start time
 
 	// Check user entries
@@ -71,42 +76,94 @@ func CreateDataFrame(path, fileName string) (map[int]Record, []string) {
 		myRecords[i] = x
 	}
 
+	newFrame := DataFrame{myRecords: myRecords, headers: header}
+
 	elapsed := time.Since(start) // Calculate elapsed execution time
 
 	fmt.Printf("\nDataFrame Ready\nExecution Time: %s\n", elapsed)
-	return myRecords, header
+	return newFrame
 }
 
-func NewField(df map[int]Record, headers []string, fieldName string) (map[int]Record, []string) {
-	// Creates a new field and assigns it the provided value.
-	// Must pass in the original DataFrame as well as header slice.
-	// Returns a tuple with new DataFrame and headers.
-	for _, row := range df {
+// Generates a new filtered DataFrame.
+// New DataFrame will be kept in same order as original.
+func (frame DataFrame) Filtered(fieldName, value string) DataFrame {
+	myRecords := make(map[int]Record)
+
+	pos := 0
+	for i := 0; i < len(frame.myRecords); i++ {
+		if frame.myRecords[i].data[fieldName] == value {
+			x := Record{make(map[string]string)}
+
+			// Loop over columns
+			for _, each := range frame.headers {
+				x.data[each] = frame.myRecords[i].data[each]
+			}
+
+			myRecords[pos] = x
+			pos++
+		}
+	}
+	newFrame := DataFrame{myRecords: myRecords, headers: frame.headers}
+
+	return newFrame
+}
+
+// Creates a new field and assigns it the provided value.
+// Must pass in the original DataFrame as well as header slice.
+// Returns a tuple with new DataFrame and headers.
+func (frame DataFrame) NewField(fieldName string) DataFrame {
+	for _, row := range frame.myRecords {
 		row.data[fieldName] = ""
 	}
-	headers = append(headers, fieldName)
-	return df, headers
+	frame.headers = append(frame.headers, fieldName)
+	return frame
 }
 
-func ConcatFrames(dfOrig map[int]Record, dfNew map[int]Record, headers []string) map[int]Record {
-	keyStart := len(dfOrig)
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+
+// Return a slice of all unique values found in a specified field.
+func (frame DataFrame) Unique(fieldName string) []string {
+	var results []string
+
+	for _, row := range frame.myRecords {
+		if contains(results, row.Val(fieldName)) != true {
+			results = append(results, row.Val(fieldName))
+		}
+	}
+	return results
+}
+
+// Stack two DataFrames with matching headers.
+func (frame DataFrame) ConcatFrames(dfNew DataFrame) DataFrame {
+	keyStart := len(frame.myRecords)
 
 	// Iterate over new dataframe in order
-	for i := 0; i < len(dfNew); i++ {
+	for i := 0; i < len(dfNew.myRecords); i++ {
 		// Create new Record
 		x := Record{make(map[string]string)}
 
 		// Iterate over headers and add data to Record
-		for _, header := range headers {
-			x.data[header] = dfNew[i].Val(header)
+		for _, header := range frame.headers {
+			x.data[header] = dfNew.myRecords[i].Val(header)
 		}
-		dfOrig[keyStart] = x
+		frame.myRecords[keyStart] = x
 		keyStart++
 	}
-	return dfOrig
+	return frame
 }
 
-func SaveDataFrame(df map[int]Record, headers []string, fileName string, path string) bool {
+func (frame DataFrame) CountRecords() int {
+	return len(frame.myRecords)
+}
+
+func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
 	start := time.Now() // Execution start time
 
 	// Create the csv file
@@ -124,16 +181,16 @@ func SaveDataFrame(df map[int]Record, headers []string, fileName string, path st
 	var row []string
 
 	// Write headers to top of file
-	for _, header := range headers {
+	for _, header := range frame.headers {
 		row = append(row, header)
 	}
 	data = append(data, row)
 
 	// Iterate over map by order of index or keys.
-	for i := 0; i < len(df); i++ {
+	for i := 0; i < len(frame.myRecords); i++ {
 		var row []string
-		for _, header := range headers {
-			row = append(row, df[i].data[header])
+		for _, header := range frame.headers {
+			row = append(row, frame.myRecords[i].data[header])
 		}
 		data = append(data, row)
 	}

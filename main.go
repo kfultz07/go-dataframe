@@ -19,7 +19,15 @@ type DataFrame struct {
 	Headers      []string
 }
 
-// Convert back to Upper Case
+// Generate a new empty DataFrame.
+func CreateNewDataFrame(headers []string) DataFrame {
+	myRecords := make(map[int]Record)
+	newFrame := DataFrame{FrameRecords: myRecords, Headers: headers}
+
+	return newFrame
+}
+
+// Generate a new DataFrame sourced from a csv file.
 func CreateDataFrame(path, fileName string) DataFrame {
 	start := time.Now() // Execution start time
 
@@ -82,6 +90,19 @@ func CreateDataFrame(path, fileName string) DataFrame {
 
 	fmt.Printf("\nDataFrame Ready\nExecution Time: %s\n", elapsed)
 	return newFrame
+}
+
+// Add a new record to the DataFrame.
+func (frame DataFrame) AddRecord(newData []string) DataFrame {
+	x := Record{make(map[string]string)}
+
+	for i, each := range frame.Headers {
+		x.Data[each] = newData[i]
+	}
+
+	frame.FrameRecords[len(frame.FrameRecords)] = x
+
+	return frame
 }
 
 // Generates a new filtered DataFrame.

@@ -11,12 +11,12 @@ import (
 )
 
 type Record struct {
-	data map[string]string
+	Data map[string]string
 }
 
 type DataFrame struct {
-	myRecords map[int]Record
-	headers   []string
+	FrameRecords map[int]Record
+	Headers      []string
 }
 
 // Convert back to Upper Case
@@ -69,14 +69,14 @@ func CreateDataFrame(path, fileName string) DataFrame {
 
 		// Loop over columns and dynamically add column data for each header
 		for pos, each := range header {
-			x.data[each] = record[pos]
+			x.Data[each] = record[pos]
 		}
 
 		// Add Record object to map
 		myRecords[i] = x
 	}
 
-	newFrame := DataFrame{myRecords: myRecords, headers: header}
+	newFrame := DataFrame{FrameRecords: myRecords, Headers: header}
 
 	elapsed := time.Since(start) // Calculate elapsed execution time
 
@@ -90,20 +90,20 @@ func (frame DataFrame) Filtered(fieldName, value string) DataFrame {
 	myRecords := make(map[int]Record)
 
 	pos := 0
-	for i := 0; i < len(frame.myRecords); i++ {
-		if frame.myRecords[i].data[fieldName] == value {
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		if frame.FrameRecords[i].Data[fieldName] == value {
 			x := Record{make(map[string]string)}
 
 			// Loop over columns
-			for _, each := range frame.headers {
-				x.data[each] = frame.myRecords[i].data[each]
+			for _, each := range frame.Headers {
+				x.Data[each] = frame.FrameRecords[i].Data[each]
 			}
 
 			myRecords[pos] = x
 			pos++
 		}
 	}
-	newFrame := DataFrame{myRecords: myRecords, headers: frame.headers}
+	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
 
 	return newFrame
 }
@@ -112,10 +112,10 @@ func (frame DataFrame) Filtered(fieldName, value string) DataFrame {
 // Must pass in the original DataFrame as well as header slice.
 // Returns a tuple with new DataFrame and headers.
 func (frame DataFrame) NewField(fieldName string) DataFrame {
-	for _, row := range frame.myRecords {
-		row.data[fieldName] = ""
+	for _, row := range frame.FrameRecords {
+		row.Data[fieldName] = ""
 	}
-	frame.headers = append(frame.headers, fieldName)
+	frame.Headers = append(frame.Headers, fieldName)
 	return frame
 }
 
@@ -132,7 +132,7 @@ func contains(s []string, str string) bool {
 func (frame DataFrame) Unique(fieldName string) []string {
 	var results []string
 
-	for _, row := range frame.myRecords {
+	for _, row := range frame.FrameRecords {
 		if contains(results, row.Val(fieldName)) != true {
 			results = append(results, row.Val(fieldName))
 		}
@@ -142,25 +142,25 @@ func (frame DataFrame) Unique(fieldName string) []string {
 
 // Stack two DataFrames with matching headers.
 func (frame DataFrame) ConcatFrames(dfNew DataFrame) DataFrame {
-	keyStart := len(frame.myRecords)
+	keyStart := len(frame.FrameRecords)
 
 	// Iterate over new dataframe in order
-	for i := 0; i < len(dfNew.myRecords); i++ {
+	for i := 0; i < len(dfNew.FrameRecords); i++ {
 		// Create new Record
 		x := Record{make(map[string]string)}
 
 		// Iterate over headers and add data to Record
-		for _, header := range frame.headers {
-			x.data[header] = dfNew.myRecords[i].Val(header)
+		for _, header := range frame.Headers {
+			x.Data[header] = dfNew.FrameRecords[i].Val(header)
 		}
-		frame.myRecords[keyStart] = x
+		frame.FrameRecords[keyStart] = x
 		keyStart++
 	}
 	return frame
 }
 
 func (frame DataFrame) CountRecords() int {
-	return len(frame.myRecords)
+	return len(frame.FrameRecords)
 }
 
 func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
@@ -181,16 +181,16 @@ func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
 	var row []string
 
 	// Write headers to top of file
-	for _, header := range frame.headers {
+	for _, header := range frame.Headers {
 		row = append(row, header)
 	}
 	data = append(data, row)
 
 	// Iterate over map by order of index or keys.
-	for i := 0; i < len(frame.myRecords); i++ {
+	for i := 0; i < len(frame.FrameRecords); i++ {
 		var row []string
-		for _, header := range frame.headers {
-			row = append(row, frame.myRecords[i].data[header])
+		for _, header := range frame.Headers {
+			row = append(row, frame.FrameRecords[i].Data[header])
 		}
 		data = append(data, row)
 	}
@@ -206,17 +206,17 @@ func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
 
 func (x Record) Val(fieldName string) string {
 	// Return the value of the specified field
-	return x.data[fieldName]
+	return x.Data[fieldName]
 }
 
 func (x Record) Update(fieldName, value string) {
 	// Update the value in a specified field
-	x.data[fieldName] = value
+	x.Data[fieldName] = value
 }
 
 func (x Record) ConvertToFloat(fieldName string) float64 {
 	// Converts the value from a string to float64
-	value, err := strconv.ParseFloat(x.data[fieldName], 64)
+	value, err := strconv.ParseFloat(x.Data[fieldName], 64)
 	if err != nil {
 		fmt.Println("Could Not Convert to float64")
 		os.Exit(0)
@@ -226,7 +226,7 @@ func (x Record) ConvertToFloat(fieldName string) float64 {
 
 func (x Record) ConvertToInt(fieldName string) int64 {
 	// Converts the value from a string to int64
-	value, err := strconv.ParseInt(x.data[fieldName], 0, 64)
+	value, err := strconv.ParseInt(x.Data[fieldName], 0, 64)
 	if err != nil {
 		fmt.Println("Could Not Convert to int64")
 		os.Exit(0)
@@ -236,7 +236,7 @@ func (x Record) ConvertToInt(fieldName string) int64 {
 
 func (x Record) ConvertToDate(fieldName string) time.Time {
 	// Converts the value from a string to time.Time
-	value, err := time.Parse("2006-01-02", x.data[fieldName])
+	value, err := time.Parse("2006-01-02", x.Data[fieldName])
 	if err != nil {
 		fmt.Println("Could Not Convert to Date")
 

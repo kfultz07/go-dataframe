@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -29,8 +30,6 @@ func CreateNewDataFrame(headers []string) DataFrame {
 
 // Generate a new DataFrame sourced from a csv file.
 func CreateDataFrame(path, fileName string) DataFrame {
-	start := time.Now() // Execution start time
-
 	// Check user entries
 	if path[len(path)-1:] != "/" {
 		path = path + "/"
@@ -46,8 +45,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Open the CSV file
 	recordFile, err := os.Open(path + fileName)
 	if err != nil {
-		fmt.Println("Error opening the file. Please ensure the path and filename are correct.")
-		os.Exit(0)
+		log.Fatal("Error opening the file. Please ensure the path and filename are correct.")
 	}
 
 	// Setup the reader
@@ -56,21 +54,19 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Read the records
 	header, err := reader.Read()
 	if err != nil {
-		fmt.Println("Error reading the records")
-		os.Exit(0)
+		log.Fatal("Error reading the records")
 	}
 
 	// Empty map to store struct objects
 	myRecords := make(map[int]Record)
 
 	// Loop over the records and create Record objects.
-	fmt.Println("\nBuilding DataFrame...")
 	for i := 0; ; i++ {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break // Reached end of file
 		} else if err != nil {
-			fmt.Println("Error")
+			log.Fatal("Error in record loop.")
 		}
 		// Create the new Record
 		x := Record{make(map[string]string)}
@@ -86,9 +82,6 @@ func CreateDataFrame(path, fileName string) DataFrame {
 
 	newFrame := DataFrame{FrameRecords: myRecords, Headers: header}
 
-	elapsed := time.Since(start) // Calculate elapsed execution time
-
-	fmt.Printf("\nDataFrame Ready\nExecution Time: %s\n", elapsed)
 	return newFrame
 }
 
@@ -185,8 +178,6 @@ func (frame DataFrame) CountRecords() int {
 }
 
 func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
-	start := time.Now() // Execution start time
-
 	// Create the csv file
 	csvFile, err := os.Create(path + fileName + ".csv")
 	defer csvFile.Close()
@@ -218,10 +209,6 @@ func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
 
 	w.WriteAll(data)
 
-	elapsed := time.Since(start) // Calculate elapsed execution time
-
-	fmt.Printf("\nDataFrame Saved\nExecution Time: %s\n", elapsed)
-
 	return true
 }
 
@@ -239,8 +226,7 @@ func (x Record) ConvertToFloat(fieldName string) float64 {
 	// Converts the value from a string to float64
 	value, err := strconv.ParseFloat(x.Data[fieldName], 64)
 	if err != nil {
-		fmt.Println("Could Not Convert to float64")
-		os.Exit(0)
+		log.Fatal("Could Not Convert to float64")
 	}
 	return value
 }
@@ -249,8 +235,7 @@ func (x Record) ConvertToInt(fieldName string) int64 {
 	// Converts the value from a string to int64
 	value, err := strconv.ParseInt(x.Data[fieldName], 0, 64)
 	if err != nil {
-		fmt.Println("Could Not Convert to int64")
-		os.Exit(0)
+		log.Fatal("Could Not Convert to int64")
 	}
 	return value
 }
@@ -259,9 +244,7 @@ func (x Record) ConvertToDate(fieldName string) time.Time {
 	// Converts the value from a string to time.Time
 	value, err := time.Parse("2006-01-02", x.Data[fieldName])
 	if err != nil {
-		fmt.Println("Could Not Convert to Date")
-
-		os.Exit(0)
+		log.Fatal("Could Not Convert to time.Time")
 	}
 	return value
 }

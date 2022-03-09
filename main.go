@@ -265,7 +265,24 @@ func (x Record) ConvertToInt(fieldName string) int64 {
 
 func (x Record) ConvertToDate(fieldName string) time.Time {
 	// Converts the value from a string to time.Time
-	value, err := time.Parse("2006-01-02", x.Data[fieldName])
+	dateString := x.Data[fieldName]
+
+	// Convert date if not in 2006-01-02 format.
+	if strings.Contains(dateString, "/") {
+		dateSlice := strings.Split(dateString, "/")
+
+		if len(dateSlice[0]) != 2 {
+			dateSlice[0] = "0" + dateSlice[0]
+		}
+		if len(dateSlice[1]) != 2 {
+			dateSlice[1] = "0" + dateSlice[1]
+		}
+		if len(dateSlice[2]) == 2 {
+			dateSlice[2] = "20" + dateSlice[2]
+		}
+		dateString = dateSlice[2] + "-" + dateSlice[0] + "-" + dateSlice[1]
+	}
+	value, err := time.Parse("2006-01-02", dateString)
 	if err != nil {
 		log.Fatal("Could Not Convert to time.Time")
 	}

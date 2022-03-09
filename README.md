@@ -4,10 +4,11 @@ A simple package to abstract away the process of creating usable DataFrames for 
 # Generate DataFrame
 User may utilize the CreateDataFrame function to create a DataFrame from an existing CSV file or create an empty DataFrame with the CreateNewDataFrame function. The user can then iterate over the DataFrame to perform the intended tasks. All data in the DataFrame is a string by default. There are various methods to provide additional functionality including: converting data types, update values, filter, concatenate, and more. Please use the below instructions for examples.
 
-# Update Value in Field
+# Import Package
 ![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/Import.png)
 
-# Read & Print DataFrame
+# Read, Create New Field, & Print DataFrame
+Provide the path and the name of the CSV file.
 ![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/ReadAndPrint.png)
 
 # Filter a DataFrame

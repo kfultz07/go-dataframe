@@ -57,6 +57,14 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		log.Fatal("Error reading the records")
 	}
 
+	// Remove Byte Order Marker for UTF-8 files.
+	for i, each := range header {
+		byteSlice := []byte(each)
+		if byteSlice[0] == 239 && byteSlice[1] == 187 && byteSlice[2] == 191 {
+			header[i] = each[3:]
+		}
+	}
+
 	// Empty map to store struct objects
 	myRecords := make(map[int]Record)
 

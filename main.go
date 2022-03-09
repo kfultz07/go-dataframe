@@ -93,6 +93,21 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	return newFrame
 }
 
+// User specifies columns they want to keep from a preexisting DataFrame.
+func (frame DataFrame) KeepColumns(columns []string) DataFrame {
+	df := CreateNewDataFrame(columns)
+
+	for _, row := range frame.FrameRecords {
+		var newData []string
+		for _, column := range columns {
+			newData = append(newData, row.Val(column))
+		}
+		df.AddRecord(newData)
+	}
+
+	return df
+}
+
 // Add a new record to the DataFrame.
 func (frame DataFrame) AddRecord(newData []string) DataFrame {
 	x := Record{make(map[string]string)}

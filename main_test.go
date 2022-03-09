@@ -98,3 +98,15 @@ func TestByteOrderMark(t *testing.T) {
 		t.Error("Byte Order Mark conversion error")
 	}
 }
+
+func TestKeepColumns(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	columns := [3]string{"First Name", "Last Name", "Weight"}
+	df = df.KeepColumns(columns[:])
+
+	if df.Headers[0] != "First Name" || df.Headers[1] != "Last Name" || df.Headers[2] != "Weight" || len(df.Headers) > 3 {
+		t.Error("Keep Columns failed")
+	}
+}

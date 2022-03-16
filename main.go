@@ -145,6 +145,29 @@ func (frame DataFrame) Filtered(fieldName, value string) DataFrame {
 	return newFrame
 }
 
+// Generates a new DataFrame that excludes specified instances.
+func (frame DataFrame) Exclude(fieldName, value string) DataFrame {
+	myRecords := make(map[int]Record)
+
+	pos := 0
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		if frame.FrameRecords[i].Data[fieldName] != value {
+			x := Record{make(map[string]string)}
+
+			// Loop over columns
+			for _, each := range frame.Headers {
+				x.Data[each] = frame.FrameRecords[i].Data[each]
+			}
+
+			myRecords[pos] = x
+			pos++
+		}
+	}
+	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
+
+	return newFrame
+}
+
 // Creates a new field and assigns it the provided value.
 // Must pass in the original DataFrame as well as header slice.
 // Returns a tuple with new DataFrame and headers.

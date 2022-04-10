@@ -170,6 +170,8 @@ func (frame DataFrame) Exclude(fieldName, value string) DataFrame {
 
 // Generates a new filtered DataFrame with all records occuring after a specified date provided by the user.
 // User must provide the date field as well as the desired date.
+// Instances where record dates occur on the same date provided by the user will not be included. Records must occur
+// after the specified date.
 func (frame DataFrame) FilteredAfter(fieldName, desiredDate string) DataFrame {
 	myRecords := make(map[int]Record)
 
@@ -198,6 +200,8 @@ func (frame DataFrame) FilteredAfter(fieldName, desiredDate string) DataFrame {
 
 // Generates a new filtered DataFrame with all records occuring before a specified date provided by the user.
 // User must provide the date field as well as the desired date.
+// Instances where record dates occur on the same date provided by the user will not be included. Records must occur
+// before the specified date.
 func (frame DataFrame) FilteredBefore(fieldName, desiredDate string) DataFrame {
 	myRecords := make(map[int]Record)
 
@@ -226,6 +230,8 @@ func (frame DataFrame) FilteredBefore(fieldName, desiredDate string) DataFrame {
 
 // Generates a new filtered DataFrame with all records occuring between a specified date range provided by the user.
 // User must provide the date field as well as the desired date.
+// Instances where record dates occur on the same date provided by the user will not be included. Records must occur
+// between the specified start and end dates.
 func (frame DataFrame) FilteredBetween(fieldName, startDate, endDate string) DataFrame {
 	myRecords := make(map[int]Record)
 

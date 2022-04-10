@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"testing"
+	"time"
 )
 
 func TestCreateDataFrameCostFloat(t *testing.T) {
@@ -76,6 +77,66 @@ func TestExcludeCheck(t *testing.T) {
 	}
 }
 
+func TestFilteredAfterCount(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	dfFil := df.FilteredAfter("Date", "2022-01-08")
+
+	if df.CountRecords() != 10 || dfFil.CountRecords() != 2 {
+		t.Error("Filtered After count incorrect.")
+	}
+}
+
+func TestFilteredAfterCountExcelFormat(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestDataDateFormat.csv")
+	dfFil := df.FilteredAfter("Date", "2022-01-08")
+
+	if df.CountRecords() != 10 || dfFil.CountRecords() != 2 {
+		t.Error("Filtered After Excel Format count incorrect.")
+	}
+}
+
+func TestFilteredBeforeCount(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	dfFil := df.FilteredBefore("Date", "2022-01-08")
+
+	if df.CountRecords() != 10 || dfFil.CountRecords() != 7 {
+		t.Error("Filtered Before count incorrect.")
+	}
+}
+
+func TestFilteredBeforeCountExcelFormat(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestDataDateFormat.csv")
+	dfFil := df.FilteredBefore("Date", "2022-01-08")
+
+	if df.CountRecords() != 10 || dfFil.CountRecords() != 7 {
+		t.Error("Filtered Before Excel Format count incorrect.")
+	}
+}
+
+func TestFilteredBetweenCount(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	dfFil := df.FilteredBetween("Date", "2022-01-02", "2022-01-09")
+
+	if df.CountRecords() != 10 || dfFil.CountRecords() != 6 {
+		t.Error("Filtered Between count incorrect.")
+	}
+}
+
+func TestFilteredBetweenExcelFormat(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestDataDateFormat.csv")
+	dfFil := df.FilteredBetween("Date", "2022-01-02", "2022-01-09")
+
+	if df.CountRecords() != 10 || dfFil.CountRecords() != 6 {
+		t.Error("Filtered Between Excel Format count incorrect.")
+	}
+}
+
 func TestRecordCheck(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
@@ -142,5 +203,47 @@ func TestKeepColumns(t *testing.T) {
 
 	if df.Headers[0] != "First Name" || df.Headers[1] != "Last Name" || df.Headers[2] != "Weight" || len(df.Headers) > 3 {
 		t.Error("Keep Columns failed")
+	}
+}
+
+func TestDateConverterStandardFormat(t *testing.T) {
+	var s interface{} = dateConverter("2022-01-31")
+	if _, ok := s.(time.Time); ok != true {
+		t.Error("Date Converter Standard Format Failed")
+	}
+}
+
+func TestDateConverterExcelFormatDoubleDigit(t *testing.T) {
+	var s interface{} = dateConverter("01/31/2022")
+	if _, ok := s.(time.Time); ok != true {
+		t.Error("Date Converter Excel Format Failed")
+	}
+}
+
+func TestDateConverterExcelFormatSingleMonthDigit(t *testing.T) {
+	var s interface{} = dateConverter("1/31/2022")
+	if _, ok := s.(time.Time); ok != true {
+		t.Error("Date Converter Excel Format Failed")
+	}
+}
+
+func TestDateConverterExcelFormatSingleDayDigit(t *testing.T) {
+	var s interface{} = dateConverter("01/1/2022")
+	if _, ok := s.(time.Time); ok != true {
+		t.Error("Date Converter Excel Format Failed")
+	}
+}
+
+func TestDateConverterExcelFormatSingleDigit(t *testing.T) {
+	var s interface{} = dateConverter("1/1/2022")
+	if _, ok := s.(time.Time); ok != true {
+		t.Error("Date Converter Excel Format Failed")
+	}
+}
+
+func TestDateConverterExcelFormatDoubleYearDigit(t *testing.T) {
+	var s interface{} = dateConverter("01/31/22")
+	if _, ok := s.(time.Time); ok != true {
+		t.Error("Date Converter Excel Format Failed")
 	}
 }

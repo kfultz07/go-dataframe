@@ -168,6 +168,91 @@ func (frame DataFrame) Exclude(fieldName, value string) DataFrame {
 	return newFrame
 }
 
+// Generates a new filtered DataFrame with all records occuring after a specified date provided by the user.
+// User must provide the date field as well as the desired date.
+func (frame DataFrame) FilteredAfter(fieldName, desiredDate string) DataFrame {
+	myRecords := make(map[int]Record)
+
+	pos := 0
+
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		recordDate := dateConverter(frame.FrameRecords[i].Data[fieldName])
+		isAfter := recordDate.After(dateConverter(desiredDate))
+
+		if isAfter {
+			x := Record{make(map[string]string)}
+
+			// Loop over columns
+			for _, each := range frame.Headers {
+				x.Data[each] = frame.FrameRecords[i].Data[each]
+			}
+
+			myRecords[pos] = x
+			pos++
+		}
+	}
+	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
+
+	return newFrame
+}
+
+// Generates a new filtered DataFrame with all records occuring before a specified date provided by the user.
+// User must provide the date field as well as the desired date.
+func (frame DataFrame) FilteredBefore(fieldName, desiredDate string) DataFrame {
+	myRecords := make(map[int]Record)
+
+	pos := 0
+
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		recordDate := dateConverter(frame.FrameRecords[i].Data[fieldName])
+		isBefore := recordDate.Before(dateConverter(desiredDate))
+
+		if isBefore {
+			x := Record{make(map[string]string)}
+
+			// Loop over columns
+			for _, each := range frame.Headers {
+				x.Data[each] = frame.FrameRecords[i].Data[each]
+			}
+
+			myRecords[pos] = x
+			pos++
+		}
+	}
+	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
+
+	return newFrame
+}
+
+// Generates a new filtered DataFrame with all records occuring between a specified date range provided by the user.
+// User must provide the date field as well as the desired date.
+func (frame DataFrame) FilteredBetween(fieldName, startDate, endDate string) DataFrame {
+	myRecords := make(map[int]Record)
+
+	pos := 0
+
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		recordDate := dateConverter(frame.FrameRecords[i].Data[fieldName])
+		isAfter := recordDate.After(dateConverter(startDate))
+		isBefore := recordDate.Before(dateConverter(endDate))
+
+		if isAfter && isBefore {
+			x := Record{make(map[string]string)}
+
+			// Loop over columns
+			for _, each := range frame.Headers {
+				x.Data[each] = frame.FrameRecords[i].Data[each]
+			}
+
+			myRecords[pos] = x
+			pos++
+		}
+	}
+	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
+
+	return newFrame
+}
+
 // Creates a new field and assigns it the provided value.
 // Must pass in the original DataFrame as well as header slice.
 // Returns a tuple with new DataFrame and headers.
@@ -286,10 +371,8 @@ func (x Record) ConvertToInt(fieldName string) int64 {
 	return value
 }
 
-func (x Record) ConvertToDate(fieldName string) time.Time {
-	// Converts the value from a string to time.Time
-	dateString := x.Data[fieldName]
-
+// Converts various date strings into time.Time.
+func dateConverter(dateString string) time.Time {
 	// Convert date if not in 2006-01-02 format.
 	if strings.Contains(dateString, "/") {
 		dateSlice := strings.Split(dateString, "/")
@@ -305,9 +388,17 @@ func (x Record) ConvertToDate(fieldName string) time.Time {
 		}
 		dateString = dateSlice[2] + "-" + dateSlice[0] + "-" + dateSlice[1]
 	}
+
 	value, err := time.Parse("2006-01-02", dateString)
 	if err != nil {
 		log.Fatal("Could Not Convert to time.Time")
 	}
 	return value
+}
+
+// Converts date from specified field to time.Time.
+func (x Record) ConvertToDate(fieldName string) time.Time {
+	dateString := x.Data[fieldName]
+	result := dateConverter(dateString)
+	return result
 }

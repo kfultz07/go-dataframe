@@ -8,7 +8,6 @@ User may utilize the CreateDataFrame function to create a DataFrame from an exis
 ![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/Import.png)
 
 # Read, Create New Field, & Print DataFrame
-Provide the path and the name of the CSV file.
 ![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/ReadAndPrint.png)
 
 # Filter a DataFrame

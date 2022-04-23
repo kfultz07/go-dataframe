@@ -13,6 +13,24 @@ User may utilize the CreateDataFrame function to create a DataFrame from an exis
 # Filter a DataFrame
 ![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/Filtered.png)
 
+# Filter After to include all records after a specified date
+![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/FilteredAfter.png)
+
+# Filter Before to include all records before a specified date
+![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/FilteredBefore.png)
+
+# Filter Between to include only records within specified range
+![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/FilteredBetween.png)
+
+# Exclude from a DataFrame
+![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/Exclude.png)
+
+# Keep only specific columns
+![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/KeepColumns.png)
+
+# Add record to DataFrame
+![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/AddRecord.png)
+
 # Concatenate a DataFrame
 ![Program Example](https://github.com/kfultz07/go-dataframe/blob/main/assets/images/Concatenated.png)
 

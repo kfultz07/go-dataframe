@@ -123,12 +123,12 @@ func (frame DataFrame) AddRecord(newData []string) DataFrame {
 
 // Generates a new filtered DataFrame.
 // New DataFrame will be kept in same order as original.
-func (frame DataFrame) Filtered(fieldName, value string) DataFrame {
+func (frame DataFrame) Filtered(fieldName string, value ...string) DataFrame {
 	myRecords := make(map[int]Record)
 
 	pos := 0
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		if frame.FrameRecords[i].Data[fieldName] == value {
+		if contains(value, frame.FrameRecords[i].Data[fieldName]) == true {
 			x := Record{make(map[string]string)}
 
 			// Loop over columns
@@ -146,12 +146,12 @@ func (frame DataFrame) Filtered(fieldName, value string) DataFrame {
 }
 
 // Generates a new DataFrame that excludes specified instances.
-func (frame DataFrame) Exclude(fieldName, value string) DataFrame {
+func (frame DataFrame) Exclude(fieldName string, value ...string) DataFrame {
 	myRecords := make(map[int]Record)
 
 	pos := 0
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		if frame.FrameRecords[i].Data[fieldName] != value {
+		if contains(value, frame.FrameRecords[i].Data[fieldName]) == false {
 			x := Record{make(map[string]string)}
 
 			// Loop over columns

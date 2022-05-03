@@ -36,9 +36,9 @@ func TestCreateDataFrameCostInt(t *testing.T) {
 func TestFilteredCount(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
-	dfFil := df.Filtered("Last Name", "Fultz")
+	dfFil := df.Filtered("Last Name", "Fultz", "Wiedmann")
 
-	if df.CountRecords() != 10 || dfFil.CountRecords() != 3 {
+	if df.CountRecords() != 10 || dfFil.CountRecords() != 5 {
 		t.Error("Filtered count incorrect.")
 	}
 }
@@ -46,10 +46,10 @@ func TestFilteredCount(t *testing.T) {
 func TestFilteredCheck(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
-	dfFil := df.Filtered("Last Name", "Fultz")
+	dfFil := df.Filtered("Last Name", "Fultz", "Wiedmann")
 
 	for _, row := range dfFil.FrameRecords {
-		if row.Val("Last Name") != "Fultz" {
+		if row.Val("Last Name") != "Fultz" && row.Val("Last Name") != "Wiedmann" {
 			t.Error("Invalid parameter found in Filtered DataFrame.")
 		}
 	}
@@ -58,9 +58,9 @@ func TestFilteredCheck(t *testing.T) {
 func TestExcludeCount(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
-	dfExcl := df.Exclude("Last Name", "Fultz")
+	dfExcl := df.Exclude("Last Name", "Fultz", "Wiedmann")
 
-	if df.CountRecords() != 10 || dfExcl.CountRecords() != 7 {
+	if df.CountRecords() != 10 || dfExcl.CountRecords() != 5 {
 		t.Error("Excluded count is incorrect.")
 	}
 }
@@ -68,10 +68,10 @@ func TestExcludeCount(t *testing.T) {
 func TestExcludeCheck(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
-	dfExcl := df.Exclude("Last Name", "Fultz")
+	dfExcl := df.Exclude("Last Name", "Fultz", "Wiedmann")
 
 	for _, row := range dfExcl.FrameRecords {
-		if row.Val("Last Name") == "Fultz" {
+		if row.Val("Last Name") == "Fultz" || row.Val("Last Name") == "Wiedmann" {
 			t.Error("Excluded parameter found in DataFrame.")
 		}
 	}

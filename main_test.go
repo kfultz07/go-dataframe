@@ -247,3 +247,52 @@ func TestDateConverterExcelFormatDoubleYearDigit(t *testing.T) {
 		t.Error("Date Converter Excel Format Failed")
 	}
 }
+
+func TestConcatFrames(t *testing.T) {
+	path := "./"
+	dfOne := CreateDataFrame(path, "TestData.csv")
+	dfTwo := CreateDataFrame(path, "TestDataConcat.csv")
+
+	lastNames := [20]string{
+		"Fultz",
+		"Fultz",
+		"Fultz",
+		"Wiedmann",
+		"Wiedmann",
+		"Wilfong",
+		"Curtis",
+		"Wenck",
+		"Petruska",
+		"Carlson",
+		"Benny",
+		"Kenny",
+		"McCarlson",
+		"Jeffery",
+		"Stephenson",
+		"Patrickman",
+		"Briarson",
+		"Ericson",
+		"Asherton",
+		"Highman",
+	}
+
+	dfOne = dfOne.ConcatFrames(&dfTwo)
+	var totalCost int64
+	var totalWeight int64
+
+	for i, row := range dfOne.FrameRecords {
+		if row.Val("Last Name") != lastNames[i] {
+			t.Error("Concat Frames Failed: Last Names")
+		}
+		totalCost += row.ConvertToInt("Cost")
+		totalWeight += row.ConvertToInt("Weight")
+	}
+
+	if totalCost != 7100 || totalWeight != 3821 {
+		t.Error("Concat Frames Failed: Values")
+	}
+
+	if dfOne.CountRecords() != 20 {
+		t.Error("Concat Frames Failed: Row Count")
+	}
+}

@@ -292,7 +292,7 @@ func (frame DataFrame) Unique(fieldName string) []string {
 }
 
 // Stack two DataFrames with matching headers.
-func (frame DataFrame) ConcatFrames(dfNew DataFrame) DataFrame {
+func (frame DataFrame) ConcatFrames(dfNew *DataFrame) DataFrame {
 	keyStart := len(frame.FrameRecords)
 
 	// Iterate over new dataframe in order

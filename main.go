@@ -12,18 +12,25 @@ import (
 )
 
 type Record struct {
-	Data map[string]string
+	Data []string
 }
 
 type DataFrame struct {
-	FrameRecords map[int]Record
-	Headers      []string
+	FrameRecords []Record
+	Headers      map[string]int
 }
 
 // Generate a new empty DataFrame.
 func CreateNewDataFrame(headers []string) DataFrame {
-	myRecords := make(map[int]Record)
-	newFrame := DataFrame{FrameRecords: myRecords, Headers: headers}
+	myRecords := []Record{}
+	theHeaders := make(map[string]int)
+
+	// Add headers to map in correct order.
+	for i := 0; i < len(headers); i++ {
+		theHeaders[headers[i]] = i
+	}
+
+	newFrame := DataFrame{FrameRecords: myRecords, Headers: theHeaders}
 
 	return newFrame
 }
@@ -57,6 +64,11 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		log.Fatal("Error reading the records")
 	}
 
+	headers := make(map[string]int)
+	for i, columnName := range header {
+		headers[columnName] = i
+	}
+
 	// Remove Byte Order Marker for UTF-8 files.
 	for i, each := range header {
 		byteSlice := []byte(each)
@@ -66,7 +78,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	}
 
 	// Empty map to store struct objects
-	myRecords := make(map[int]Record)
+	sliceOfSlices := []Record{}
 
 	// Loop over the records and create Record objects.
 	for i := 0; ; i++ {
@@ -77,18 +89,19 @@ func CreateDataFrame(path, fileName string) DataFrame {
 			log.Fatal("Error in record loop.")
 		}
 		// Create the new Record
-		x := Record{make(map[string]string)}
+		x := Record{[]string{}}
 
-		// Loop over columns and dynamically add column data for each header
-		for pos, each := range header {
-			x.Data[each] = record[pos]
+		// Loop over records and add to Data field of Record struct.
+		for _, r := range record {
+			x.Data = append(x.Data, r)
 		}
 
 		// Add Record object to map
-		myRecords[i] = x
+		// myRecords[i] = x
+		sliceOfSlices = append(sliceOfSlices, x)
 	}
 
-	newFrame := DataFrame{FrameRecords: myRecords, Headers: header}
+	newFrame := DataFrame{FrameRecords: sliceOfSlices, Headers: headers}
 
 	return newFrame
 }
@@ -100,7 +113,7 @@ func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 	for _, row := range frame.FrameRecords {
 		var newData []string
 		for _, column := range columns {
-			newData = append(newData, row.Val(column))
+			newData = append(newData, row.Val(column, frame.Headers))
 		}
 		df.AddRecord(newData)
 	}
@@ -110,13 +123,13 @@ func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 
 // Add a new record to the DataFrame.
 func (frame DataFrame) AddRecord(newData []string) DataFrame {
-	x := Record{make(map[string]string)}
+	x := Record{[]string{}}
 
-	for i, each := range frame.Headers {
-		x.Data[each] = newData[i]
+	for _, each := range newData {
+		x.Data = append(x.Data, each)
 	}
 
-	frame.FrameRecords[len(frame.FrameRecords)] = x
+	frame.FrameRecords = append(frame.FrameRecords, x)
 
 	return frame
 }
@@ -124,46 +137,45 @@ func (frame DataFrame) AddRecord(newData []string) DataFrame {
 // Generates a new filtered DataFrame.
 // New DataFrame will be kept in same order as original.
 func (frame DataFrame) Filtered(fieldName string, value ...string) DataFrame {
-	myRecords := make(map[int]Record)
+	headers := []string{}
 
-	pos := 0
-	for i := 0; i < len(frame.FrameRecords); i++ {
-		if contains(value, frame.FrameRecords[i].Data[fieldName]) == true {
-			x := Record{make(map[string]string)}
-
-			// Loop over columns
-			for _, each := range frame.Headers {
-				x.Data[each] = frame.FrameRecords[i].Data[each]
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
 			}
-
-			myRecords[pos] = x
-			pos++
 		}
 	}
-	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
+	newFrame := CreateNewDataFrame(headers)
+
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		if contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) == true {
+			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+		}
+	}
 
 	return newFrame
 }
 
 // Generates a new DataFrame that excludes specified instances.
+// New DataFrame will be kept in same order as original.
 func (frame DataFrame) Exclude(fieldName string, value ...string) DataFrame {
-	myRecords := make(map[int]Record)
+	headers := []string{}
 
-	pos := 0
-	for i := 0; i < len(frame.FrameRecords); i++ {
-		if contains(value, frame.FrameRecords[i].Data[fieldName]) == false {
-			x := Record{make(map[string]string)}
-
-			// Loop over columns
-			for _, each := range frame.Headers {
-				x.Data[each] = frame.FrameRecords[i].Data[each]
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
 			}
-
-			myRecords[pos] = x
-			pos++
 		}
 	}
-	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
+	newFrame := CreateNewDataFrame(headers)
+
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		if contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) == false {
+			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+		}
+	}
 
 	return newFrame
 }
@@ -173,28 +185,25 @@ func (frame DataFrame) Exclude(fieldName string, value ...string) DataFrame {
 // Instances where record dates occur on the same date provided by the user will not be included. Records must occur
 // after the specified date.
 func (frame DataFrame) FilteredAfter(fieldName, desiredDate string) DataFrame {
-	myRecords := make(map[int]Record)
+	headers := []string{}
 
-	pos := 0
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
+			}
+		}
+	}
+	newFrame := CreateNewDataFrame(headers)
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		recordDate := dateConverter(frame.FrameRecords[i].Data[fieldName])
+		recordDate := dateConverter(frame.FrameRecords[i].Data[frame.Headers[fieldName]])
 		isAfter := recordDate.After(dateConverter(desiredDate))
 
 		if isAfter {
-			x := Record{make(map[string]string)}
-
-			// Loop over columns
-			for _, each := range frame.Headers {
-				x.Data[each] = frame.FrameRecords[i].Data[each]
-			}
-
-			myRecords[pos] = x
-			pos++
+			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
-	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
-
 	return newFrame
 }
 
@@ -203,27 +212,25 @@ func (frame DataFrame) FilteredAfter(fieldName, desiredDate string) DataFrame {
 // Instances where record dates occur on the same date provided by the user will not be included. Records must occur
 // before the specified date.
 func (frame DataFrame) FilteredBefore(fieldName, desiredDate string) DataFrame {
-	myRecords := make(map[int]Record)
+	headers := []string{}
 
-	pos := 0
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
+			}
+		}
+	}
+	newFrame := CreateNewDataFrame(headers)
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		recordDate := dateConverter(frame.FrameRecords[i].Data[fieldName])
+		recordDate := dateConverter(frame.FrameRecords[i].Data[frame.Headers[fieldName]])
 		isBefore := recordDate.Before(dateConverter(desiredDate))
 
 		if isBefore {
-			x := Record{make(map[string]string)}
-
-			// Loop over columns
-			for _, each := range frame.Headers {
-				x.Data[each] = frame.FrameRecords[i].Data[each]
-			}
-
-			myRecords[pos] = x
-			pos++
+			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
-	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
 
 	return newFrame
 }
@@ -233,28 +240,26 @@ func (frame DataFrame) FilteredBefore(fieldName, desiredDate string) DataFrame {
 // Instances where record dates occur on the same date provided by the user will not be included. Records must occur
 // between the specified start and end dates.
 func (frame DataFrame) FilteredBetween(fieldName, startDate, endDate string) DataFrame {
-	myRecords := make(map[int]Record)
+	headers := []string{}
 
-	pos := 0
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
+			}
+		}
+	}
+	newFrame := CreateNewDataFrame(headers)
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		recordDate := dateConverter(frame.FrameRecords[i].Data[fieldName])
+		recordDate := dateConverter(frame.FrameRecords[i].Data[frame.Headers[fieldName]])
 		isAfter := recordDate.After(dateConverter(startDate))
 		isBefore := recordDate.Before(dateConverter(endDate))
 
 		if isAfter && isBefore {
-			x := Record{make(map[string]string)}
-
-			// Loop over columns
-			for _, each := range frame.Headers {
-				x.Data[each] = frame.FrameRecords[i].Data[each]
-			}
-
-			myRecords[pos] = x
-			pos++
+			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
-	newFrame := DataFrame{FrameRecords: myRecords, Headers: frame.Headers}
 
 	return newFrame
 }
@@ -264,9 +269,9 @@ func (frame DataFrame) FilteredBetween(fieldName, startDate, endDate string) Dat
 // Returns a tuple with new DataFrame and headers.
 func (frame DataFrame) NewField(fieldName string) DataFrame {
 	for _, row := range frame.FrameRecords {
-		row.Data[fieldName] = ""
+		row.Data = append(row.Data, "")
 	}
-	frame.Headers = append(frame.Headers, fieldName)
+	frame.Headers[fieldName] = len(frame.Headers)
 	return frame
 }
 
@@ -284,8 +289,8 @@ func (frame DataFrame) Unique(fieldName string) []string {
 	var results []string
 
 	for _, row := range frame.FrameRecords {
-		if contains(results, row.Val(fieldName)) != true {
-			results = append(results, row.Val(fieldName))
+		if contains(results, row.Val(fieldName, frame.Headers)) != true {
+			results = append(results, row.Val(fieldName, frame.Headers))
 		}
 	}
 	return results
@@ -293,19 +298,9 @@ func (frame DataFrame) Unique(fieldName string) []string {
 
 // Stack two DataFrames with matching headers.
 func (frame DataFrame) ConcatFrames(dfNew *DataFrame) DataFrame {
-	keyStart := len(frame.FrameRecords)
-
 	// Iterate over new dataframe in order
 	for i := 0; i < len(dfNew.FrameRecords); i++ {
-		// Create new Record
-		x := Record{make(map[string]string)}
-
-		// Iterate over headers and add data to Record
-		for _, header := range frame.Headers {
-			x.Data[header] = dfNew.FrameRecords[i].Val(header)
-		}
-		frame.FrameRecords[keyStart] = x
-		keyStart++
+		frame.FrameRecords = append(frame.FrameRecords, dfNew.FrameRecords[i])
 	}
 	return frame
 }
@@ -328,18 +323,23 @@ func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
 
 	var data [][]string
 	var row []string
+	columnLength := len(frame.Headers)
 
 	// Write headers to top of file
-	for _, header := range frame.Headers {
-		row = append(row, header)
+	for i := 0; i < columnLength; i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				row = append(row, k)
+			}
+		}
 	}
 	data = append(data, row)
 
-	// Iterate over map by order of index or keys.
+	// Add Data
 	for i := 0; i < len(frame.FrameRecords); i++ {
 		var row []string
-		for _, header := range frame.Headers {
-			row = append(row, frame.FrameRecords[i].Data[header])
+		for pos := 0; pos < columnLength; pos++ {
+			row = append(row, frame.FrameRecords[i].Data[pos])
 		}
 		data = append(data, row)
 	}
@@ -349,28 +349,28 @@ func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
 	return true
 }
 
-func (x Record) Val(fieldName string) string {
+func (x Record) Val(fieldName string, headers map[string]int) string {
 	// Return the value of the specified field
-	return x.Data[fieldName]
+	return x.Data[headers[fieldName]]
 }
 
-func (x Record) Update(fieldName, value string) {
+func (x Record) Update(fieldName, value string, headers map[string]int) {
 	// Update the value in a specified field
-	x.Data[fieldName] = value
+	x.Data[headers[fieldName]] = value
 }
 
-func (x Record) ConvertToFloat(fieldName string) float64 {
+func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64 {
 	// Converts the value from a string to float64
-	value, err := strconv.ParseFloat(x.Data[fieldName], 64)
+	value, err := strconv.ParseFloat(x.Val(fieldName, headers), 64)
 	if err != nil {
 		log.Fatal("Could Not Convert to float64")
 	}
 	return value
 }
 
-func (x Record) ConvertToInt(fieldName string) int64 {
+func (x Record) ConvertToInt(fieldName string, headers map[string]int) int64 {
 	// Converts the value from a string to int64
-	value, err := strconv.ParseInt(x.Data[fieldName], 0, 64)
+	value, err := strconv.ParseInt(x.Val(fieldName, headers), 0, 64)
 	if err != nil {
 		log.Fatal("Could Not Convert to int64")
 	}
@@ -403,8 +403,7 @@ func dateConverter(dateString string) time.Time {
 }
 
 // Converts date from specified field to time.Time.
-func (x Record) ConvertToDate(fieldName string) time.Time {
-	dateString := x.Data[fieldName]
-	result := dateConverter(dateString)
+func (x Record) ConvertToDate(fieldName string, headers map[string]int) time.Time {
+	result := dateConverter(x.Val(fieldName, headers))
 	return result
 }

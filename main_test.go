@@ -1,6 +1,7 @@
 package dataframe
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -11,7 +12,7 @@ func TestCreateDataFrameCostFloat(t *testing.T) {
 	total := 0.0
 
 	for _, row := range df.FrameRecords {
-		total += row.ConvertToFloat("Cost")
+		total += row.ConvertToFloat("Cost", df.Headers)
 	}
 
 	if total != 6521.0 {
@@ -25,7 +26,7 @@ func TestCreateDataFrameCostInt(t *testing.T) {
 	var total int64
 
 	for _, row := range df.FrameRecords {
-		total += row.ConvertToInt("Cost")
+		total += row.ConvertToInt("Cost", df.Headers)
 	}
 
 	if total != 6521 {
@@ -49,7 +50,7 @@ func TestFilteredCheck(t *testing.T) {
 	dfFil := df.Filtered("Last Name", "Fultz", "Wiedmann")
 
 	for _, row := range dfFil.FrameRecords {
-		if row.Val("Last Name") != "Fultz" && row.Val("Last Name") != "Wiedmann" {
+		if row.Val("Last Name", dfFil.Headers) != "Fultz" && row.Val("Last Name", dfFil.Headers) != "Wiedmann" {
 			t.Error("Invalid parameter found in Filtered DataFrame.")
 		}
 	}
@@ -71,7 +72,7 @@ func TestExcludeCheck(t *testing.T) {
 	dfExcl := df.Exclude("Last Name", "Fultz", "Wiedmann")
 
 	for _, row := range dfExcl.FrameRecords {
-		if row.Val("Last Name") == "Fultz" || row.Val("Last Name") == "Wiedmann" {
+		if row.Val("Last Name", dfExcl.Headers) == "Fultz" || row.Val("Last Name", dfExcl.Headers) == "Wiedmann" {
 			t.Error("Excluded parameter found in DataFrame.")
 		}
 	}
@@ -149,13 +150,13 @@ func TestRecordCheck(t *testing.T) {
 	var lastName string
 
 	for _, row := range df.FrameRecords {
-		if row.Val("ID") == "5" {
-			id = row.Val("ID")
-			date = row.Val("Date")
-			cost = row.Val("Cost")
-			weight = row.Val("Weight")
-			firstName = row.Val("First Name")
-			lastName = row.Val("Last Name")
+		if row.Val("ID", df.Headers) == "5" {
+			id = row.Val("ID", df.Headers)
+			date = row.Val("Date", df.Headers)
+			cost = row.Val("Cost", df.Headers)
+			weight = row.Val("Weight", df.Headers)
+			firstName = row.Val("First Name", df.Headers)
+			lastName = row.Val("Last Name", df.Headers)
 		}
 	}
 
@@ -181,12 +182,12 @@ func TestByteOrderMark(t *testing.T) {
 
 	dfTotal := 0.0
 	for _, row := range df.FrameRecords {
-		dfTotal += row.ConvertToFloat("ID")
+		dfTotal += row.ConvertToFloat("ID", df.Headers)
 	}
 
 	dfUtfTotal := 0.0
 	for _, row := range dfUtf.FrameRecords {
-		dfUtfTotal += row.ConvertToFloat("ID")
+		dfUtfTotal += row.ConvertToFloat("ID", dfUtf.Headers)
 	}
 
 	if dfTotal != 55.0 || dfUtfTotal != 55.0 {
@@ -194,6 +195,7 @@ func TestByteOrderMark(t *testing.T) {
 	}
 }
 
+// --NEW--
 func TestKeepColumns(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
@@ -201,7 +203,7 @@ func TestKeepColumns(t *testing.T) {
 	columns := [3]string{"First Name", "Last Name", "Weight"}
 	df = df.KeepColumns(columns[:])
 
-	if df.Headers[0] != "First Name" || df.Headers[1] != "Last Name" || df.Headers[2] != "Weight" || len(df.Headers) > 3 {
+	if df.Headers["First Name"] != 0 || df.Headers["Last Name"] != 1 || df.Headers["Weight"] != 2 || len(df.Headers) > 3 {
 		t.Error("Keep Columns failed")
 	}
 }
@@ -248,10 +250,50 @@ func TestDateConverterExcelFormatDoubleYearDigit(t *testing.T) {
 	}
 }
 
+func TestNewField(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	df = df.NewField("Middle Name")
+
+	if df.Headers["Middle Name"] != 6 {
+		fmt.Println(df.Headers)
+		t.Error("New field column not added in proper position.")
+	}
+}
+
+func TestUnique(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	names := df.Unique("Last Name")
+
+	if len(names) != 7 {
+		t.Error("Unique slice error.")
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	for _, row := range df.FrameRecords {
+		if row.Val("First Name", df.Headers) == "Avery" && row.Val("Last Name", df.Headers) == "Fultz" {
+			row.Update("Weight", "30", df.Headers)
+		}
+	}
+
+	for _, row := range df.FrameRecords {
+		if row.Val("First Name", df.Headers) == "Avery" && row.Val("Last Name", df.Headers) == "Fultz" {
+			if row.Val("Weight", df.Headers) != "30" {
+				t.Error("Update row failed.")
+			}
+		}
+	}
+}
+
 func TestConcatFrames(t *testing.T) {
 	path := "./"
 	dfOne := CreateDataFrame(path, "TestData.csv")
-	dfTwo := CreateDataFrame(path, "TestDataConcat.csv")
+	df := CreateDataFrame(path, "TestDataConcat.csv")
 
 	lastNames := [20]string{
 		"Fultz",
@@ -276,16 +318,16 @@ func TestConcatFrames(t *testing.T) {
 		"Highman",
 	}
 
-	dfOne = dfOne.ConcatFrames(&dfTwo)
+	dfOne = dfOne.ConcatFrames(&df)
 	var totalCost int64
 	var totalWeight int64
 
 	for i, row := range dfOne.FrameRecords {
-		if row.Val("Last Name") != lastNames[i] {
+		if row.Val("Last Name", dfOne.Headers) != lastNames[i] {
 			t.Error("Concat Frames Failed: Last Names")
 		}
-		totalCost += row.ConvertToInt("Cost")
-		totalWeight += row.ConvertToInt("Weight")
+		totalCost += row.ConvertToInt("Cost", dfOne.Headers)
+		totalWeight += row.ConvertToInt("Weight", dfOne.Headers)
 	}
 
 	if totalCost != 7100 || totalWeight != 3821 {
@@ -294,5 +336,23 @@ func TestConcatFrames(t *testing.T) {
 
 	if dfOne.CountRecords() != 20 {
 		t.Error("Concat Frames Failed: Row Count")
+	}
+}
+
+func TestSaveDataFrame(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	if df.SaveDataFrame(path, "Testing") != true {
+		t.Error("Failed to save dataframe.")
+	}
+}
+
+func TestSaveDataFrameMemory(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame("/Users/kevinfultz/Desktop/HomeBase/Dashboards/", "Flat World Dashboard Database.csv")
+
+	if df.SaveDataFrame(path, "Testing") != true {
+		t.Error("Filtered Between count incorrect.")
 	}
 }

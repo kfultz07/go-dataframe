@@ -264,9 +264,7 @@ func (frame DataFrame) FilteredBetween(fieldName, startDate, endDate string) Dat
 	return newFrame
 }
 
-// Creates a new field and assigns it the provided value.
-// Must pass in the original DataFrame as well as header slice.
-// Returns a tuple with new DataFrame and headers.
+// Creates a new field and assigns and empty string.
 func (frame *DataFrame) NewField(fieldName string) {
 	for i, _ := range frame.FrameRecords {
 		frame.FrameRecords[i].Data = append(frame.FrameRecords[i].Data, "")

@@ -267,12 +267,11 @@ func (frame DataFrame) FilteredBetween(fieldName, startDate, endDate string) Dat
 // Creates a new field and assigns it the provided value.
 // Must pass in the original DataFrame as well as header slice.
 // Returns a tuple with new DataFrame and headers.
-func (frame DataFrame) NewField(fieldName string) DataFrame {
-	for _, row := range frame.FrameRecords {
-		row.Data = append(row.Data, "")
+func (frame *DataFrame) NewField(fieldName string) {
+	for i, _ := range frame.FrameRecords {
+		frame.FrameRecords[i].Data = append(frame.FrameRecords[i].Data, "")
 	}
 	frame.Headers[fieldName] = len(frame.Headers)
-	return frame
 }
 
 func contains(s []string, str string) bool {
@@ -309,7 +308,7 @@ func (frame DataFrame) CountRecords() int {
 	return len(frame.FrameRecords)
 }
 
-func (frame DataFrame) SaveDataFrame(path, fileName string) bool {
+func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
 	// Create the csv file
 	csvFile, err := os.Create(path + fileName + ".csv")
 	defer csvFile.Close()

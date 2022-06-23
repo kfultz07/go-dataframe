@@ -175,6 +175,37 @@ func TestRecordCheck(t *testing.T) {
 	}
 }
 
+func TestAddRecord(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	newData := [6]string{"11", "2022-06-23", "101", "500", "Ben", "Benison"}
+	df = df.AddRecord(newData[:])
+
+	if df.CountRecords() != 11 {
+		t.Error("Add Record: Count does not match.")
+	}
+
+	for _, row := range df.FrameRecords {
+		if row.Val("ID", df.Headers) == "11" {
+			if row.Val("Date", df.Headers) != "2022-06-23" {
+				t.Error("Add Record: date failed")
+			}
+			if row.Val("Cost", df.Headers) != "101" {
+				t.Error("Add Record: cost failed")
+			}
+			if row.Val("Weight", df.Headers) != "500" {
+				t.Error("Add Record: weight failed")
+			}
+			if row.Val("First Name", df.Headers) != "Ben" {
+				t.Error("Add Record: first name failed")
+			}
+			if row.Val("Last Name", df.Headers) != "Benison" {
+				t.Error("Add Record: last name failed")
+			}
+		}
+	}
+}
+
 func TestByteOrderMark(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestDataCommaSeparatedValue.csv")
@@ -253,11 +284,17 @@ func TestDateConverterExcelFormatDoubleYearDigit(t *testing.T) {
 func TestNewField(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
-	df = df.NewField("Middle Name")
+	df.NewField("Middle Name")
 
 	if df.Headers["Middle Name"] != 6 {
 		fmt.Println(df.Headers)
 		t.Error("New field column not added in proper position.")
+	}
+
+	for _, row := range df.FrameRecords {
+		if row.Val("Middle Name", df.Headers) != "" {
+			t.Error("Value in New Field is not set to nil")
+		}
 	}
 }
 
@@ -345,14 +382,5 @@ func TestSaveDataFrame(t *testing.T) {
 
 	if df.SaveDataFrame(path, "Testing") != true {
 		t.Error("Failed to save dataframe.")
-	}
-}
-
-func TestSaveDataFrameMemory(t *testing.T) {
-	path := "./"
-	df := CreateDataFrame("/Users/kevinfultz/Desktop/HomeBase/Dashboards/", "Flat World Dashboard Database.csv")
-
-	if df.SaveDataFrame(path, "Testing") != true {
-		t.Error("Filtered Between count incorrect.")
 	}
 }

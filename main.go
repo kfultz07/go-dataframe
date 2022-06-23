@@ -282,7 +282,7 @@ func contains(s []string, str string) bool {
 }
 
 // Return a slice of all unique values found in a specified field.
-func (frame DataFrame) Unique(fieldName string) []string {
+func (frame *DataFrame) Unique(fieldName string) []string {
 	var results []string
 
 	for _, row := range frame.FrameRecords {
@@ -302,8 +302,81 @@ func (frame DataFrame) ConcatFrames(dfNew *DataFrame) DataFrame {
 	return frame
 }
 
-func (frame DataFrame) CountRecords() int {
+func (frame *DataFrame) CountRecords() int {
 	return len(frame.FrameRecords)
+}
+
+// Return a sum of float64 type of a numerical field.
+func (frame *DataFrame) Sum(fieldName string) float64 {
+	var sum float64
+
+	for _, row := range frame.FrameRecords {
+		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
+		if err != nil {
+			panic("Could Not Convert String to Float During Sum.")
+		}
+		sum += val
+	}
+	return sum
+}
+
+// Return an average of type float64 of a numerical field.
+func (frame *DataFrame) Average(fieldName string) float64 {
+	sum := frame.Sum(fieldName)
+	count := frame.CountRecords()
+
+	if count == 0 {
+		return 0.0
+	}
+	return sum / float64(count)
+}
+
+// Return the maximum value in a numerical field.
+func (frame *DataFrame) Max(fieldName string) float64 {
+	maximum := 0.0
+	for i, row := range frame.FrameRecords {
+		// Set the max to the first value in dataframe.
+		if i == 0 {
+			initialMax, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
+			if err != nil {
+				panic("Could Not Convert String to Float During Sum.")
+			}
+			maximum = initialMax
+		}
+		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
+		if err != nil {
+			panic("Could Not Convert String to Float During Sum.")
+		}
+
+		if val > maximum {
+			maximum = val
+		}
+	}
+	return maximum
+}
+
+// Return the minimum value in a numerical field.
+func (frame *DataFrame) Min(fieldName string) float64 {
+	min := 0.0
+	for i, row := range frame.FrameRecords {
+		// Set the max to the first value in dataframe.
+		if i == 0 {
+			initialMin, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
+			if err != nil {
+				panic("Could Not Convert String to Float During Sum.")
+			}
+			min = initialMin
+		}
+		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
+		if err != nil {
+			panic("Could Not Convert String to Float During Sum.")
+		}
+
+		if val < min {
+			min = val
+		}
+	}
+	return min
 }
 
 func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {

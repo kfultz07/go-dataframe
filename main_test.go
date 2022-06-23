@@ -34,6 +34,42 @@ func TestCreateDataFrameCostInt(t *testing.T) {
 	}
 }
 
+func TestSum(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	if df.Sum("Weight") != 3376.0 || df.Sum("Cost") != 6521.0 {
+		t.Error("Just sum error...")
+	}
+}
+
+func TestAverage(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	if df.Average("Weight") != 337.60 || df.Average("Cost") != 652.10 {
+		t.Error("Not your average error...")
+	}
+}
+
+func TestMax(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	if df.Max("Weight") != 500.0 || df.Max("Cost") != 995.0 {
+		t.Error("Error to the max...")
+	}
+}
+
+func TestMin(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	if df.Min("Weight") != 157.0 || df.Min("Cost") != 121.0 {
+		t.Error("Error to the min...")
+	}
+}
+
 func TestFilteredCount(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
@@ -383,4 +419,55 @@ func TestSaveDataFrame(t *testing.T) {
 	if df.SaveDataFrame(path, "Testing") != true {
 		t.Error("Failed to save dataframe.")
 	}
+}
+
+func TestAssortment(t *testing.T) {
+	path := "./"
+
+	// Concatenate Frames
+	dfOne := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "TestDataConcat.csv")
+	df = df.ConcatFrames(&dfOne)
+
+	// Add Records
+	newData := [6]string{"21", "2022-01-01", "200", "585", "Tommy", "Thompson"}
+	df = df.AddRecord(newData[:])
+	newDataTwo := [6]string{"22", "2022-01-31", "687", "948", "Sarah", "McSarahson"}
+	df = df.AddRecord(newDataTwo[:])
+
+	if df.CountRecords() != 22 {
+		t.Error("Assortment: concat count incorrect.")
+	}
+
+	df = df.Exclude("Last Name", "Fultz", "Highman", "Stephenson")
+
+	if df.CountRecords() != 17 {
+		t.Error("Assortment: excluded count incorrect.")
+	}
+
+	df = df.FilteredAfter("Date", "2022-01-08")
+
+	if df.CountRecords() != 4 {
+		t.Error("Assortment: filtered after count incorrect.")
+	}
+
+	lastNames := df.Unique("Last Name")
+	checkLastNames := [4]string{"Petruska", "Carlson", "Asherton", "McSarahson"}
+
+	if len(lastNames) != 4 {
+		t.Error("Assortment: last name count failed")
+	}
+
+	for _, name := range lastNames {
+		var status bool
+		for _, cName := range checkLastNames {
+			if name == cName {
+				status = true
+			}
+		}
+		if status != true {
+			t.Error("Assortment: last name not found.")
+		}
+	}
+
 }

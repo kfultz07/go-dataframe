@@ -9,11 +9,11 @@ User may utilize the CreateDataFrame function to create a DataFrame from an exis
 import (
     "fmt"
 
-    dataframe"github.com/kfultz07/go-dataframe"
+    dataframe "github.com/kfultz07/go-dataframe"
 )
 ```
 
-# Read, Create New Field, & Print DataFrame
+# Read CSV file into DataFrame and create new field
 ```go
 path := "/Users/Name/Desktop/"
 
@@ -52,7 +52,7 @@ dfFil := df.FilteredBefore("Date", "2022.12-31")
 dfFil := df.FilteredBetween("Date", "2022-01-01", "2022-12-31")
 ```
 
-# Add record to DataFrame and later update.
+# Add record to DataFrame and later update
 ```go
 // Add a new record.
 data := [6]string{"11", "2022-01-01", "123", "456", "Kevin", "Kevison"}

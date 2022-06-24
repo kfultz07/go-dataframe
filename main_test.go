@@ -471,3 +471,14 @@ func TestAssortment(t *testing.T) {
 	}
 
 }
+
+func TestMemory(t *testing.T) {
+	path := "./"
+	// path := "/users/kevinfultz/desktop/homebase/dashboards/"
+	df := CreateDataFrame(path, "TestData.csv")
+	df.ViewColumns()
+
+	if 1 != 1 {
+		t.Error("Blah blah blah error time.")
+	}
+}

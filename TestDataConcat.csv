@@ -1,11 +1,11 @@
-﻿ID,Date,Cost,Weight,First Name,Last Name
-11,1/1/22,20,34,Ben,Benny
-12,1/2/22,84,14,Kevin,Kenny
-13,1/3/22,44,8,Carl,McCarlson
-14,1/4/22,53,9,Jeff,Jeffery
-15,1/5/22,97,39,Steve,Stephenson
-16,1/6/22,95,66,Pat,Patrickman
-17,1/7/22,0,65,Brian,Briarson
-18,1/8/22,99,62,Eric,Ericson
-19,1/9/22,21,88,Ashley,Asherton
-20,1/10/22,66,60,Heather,Highman
+ID,Date,Cost,Weight,First Name,Last Name
+11,2022-01-01,20,34,Ben,Benny
+12,2022-01-02,84,14,Kevin,Kenny
+13,2022-01-03,44,8,Carl,McCarlson
+14,2022-01-04,53,9,Jeff,Jeffery
+15,2022-01-05,97,39,Steve,Stephenson
+16,2022-01-06,95,66,Pat,Patrickman
+17,2022-01-07,0,65,Brian,Briarson
+18,2022-01-08,99,62,Eric,Ericson
+19,2022-01-09,21,88,Ashley,Asherton
+20,2022-01-10,66,60,Heather,Highman

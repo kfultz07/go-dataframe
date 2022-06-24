@@ -64,17 +64,17 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		log.Fatal("Error reading the records")
 	}
 
-	headers := make(map[string]int)
-	for i, columnName := range header {
-		headers[columnName] = i
-	}
-
 	// Remove Byte Order Marker for UTF-8 files.
 	for i, each := range header {
 		byteSlice := []byte(each)
 		if byteSlice[0] == 239 && byteSlice[1] == 187 && byteSlice[2] == 191 {
 			header[i] = each[3:]
 		}
+	}
+
+	headers := make(map[string]int)
+	for i, columnName := range header {
+		headers[columnName] = i
 	}
 
 	// Empty map to store struct objects

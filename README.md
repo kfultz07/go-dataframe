@@ -2,7 +2,7 @@
 A simple package to abstract away the process of creating usable DataFrames for data analytics. This package is heavily inspired by the amazing Python library, Pandas.
 
 # Generate DataFrame
-User may utilize the CreateDataFrame function to create a DataFrame from an existing CSV file or create an empty DataFrame with the CreateNewDataFrame function. The user can then iterate over the DataFrame to perform the intended tasks. All data in the DataFrame is a string by default. There are various methods to provide additional functionality including: converting data types, update values, filter, concatenate, and more. Please use the below instructions for examples.
+User may utilize the CreateDataFrame function to create a DataFrame from an existing CSV file or create an empty DataFrame with the CreateNewDataFrame function. The user can then iterate over the DataFrame to perform the intended tasks. All data in the DataFrame is a string by default. There are various methods to provide additional functionality including: converting data types, update values, filter, concatenate, and more. Please use the below examples or explode the code to learn more.
 
 # Import Package
 ```go
@@ -74,7 +74,7 @@ for _, row := range df.FrameRecords {
 df = df.ConcatFrames(&dfFil)
 ```
 
-# Various Metrics Tools
+# Various Metrics & Tools
 ```go
 // Total rows
 total := df.CountRecords()
@@ -88,10 +88,7 @@ average := df.Average("Weight")
 // Min or Max of a numerical field
 minimum := df.Min("Cost")
 maximum := df.Max("Cost")
-```
 
-# Various Tools
-```go
 // Creates a slice of all unique values in a specified field.
 lastNames := df.Unique("Last Name")
 

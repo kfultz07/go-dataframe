@@ -2,7 +2,7 @@
 A simple package to abstract away the process of creating usable DataFrames for data analytics. This package is heavily inspired by the amazing Python library, Pandas.
 
 # Generate DataFrame
-User may utilize the CreateDataFrame function to create a DataFrame from an existing CSV file or create an empty DataFrame with the CreateNewDataFrame function. The user can then iterate over the DataFrame to perform the intended tasks. All data in the DataFrame is a string by default. There are various methods to provide additional functionality including: converting data types, update values, filter, concatenate, and more. Please use the below examples or explode the code to learn more.
+Utilize the CreateDataFrame function to create a DataFrame from an existing CSV file or create an empty DataFrame with the CreateNewDataFrame function. The user can then iterate over the DataFrame to perform the intended tasks. All data in the DataFrame is a string by default. There are various methods to provide additional functionality including: converting data types, update values, filter, concatenate, and more. Please use the below examples or explode the code to learn more.
 
 # Import Package
 ```go
@@ -13,7 +13,7 @@ import (
 )
 ```
 
-# Read CSV file into DataFrame and create new field
+# Read CSV into DataFrame, create new field and save to a new file.
 ```go
 path := "/Users/Name/Desktop/"
 
@@ -34,11 +34,13 @@ for _, row := range df.FrameRecords {
     // Update the row.
     row.Update("CWT", result, df.Headers)
 }
+
+df.SaveDataFrame(path, "NewFileName")
 ```
 
 # Various methods to filter DataFrames
 ```go
-// A variadic methods that generate a new DataFrame.
+// Variadic methods that generate a new DataFrame.
 dfFil := df.Filtered("Last Name", "McCarlson", "Benison", "Stephenson")
 dfFil := df.Exclude("Last Name", "McCarlson", "Benison", "Stephenson")
 
@@ -48,7 +50,7 @@ dfFil := df.KeepColumns(columns[:])
 
 // Filter before, after, or between specified dates.
 dfFil := df.FilteredAfter("Date", "2022-12-31")
-dfFil := df.FilteredBefore("Date", "2022.12-31")
+dfFil := df.FilteredBefore("Date", "2022-12-31")
 dfFil := df.FilteredBetween("Date", "2022-01-01", "2022-12-31")
 ```
 
@@ -89,7 +91,7 @@ average := df.Average("Weight")
 minimum := df.Min("Cost")
 maximum := df.Max("Cost")
 
-// Creates a slice of all unique values in a specified field.
+// Returns a slice of all unique values in a specified field.
 lastNames := df.Unique("Last Name")
 
 // Print all columns to console.

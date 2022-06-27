@@ -322,8 +322,18 @@ func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...s
 					colStatus = true
 				}
 			}
+			// Ensure there are no duplicated columns other than the primary key.
 			if colStatus != true {
 				panic("Merge Error: User provided column not found in right dataframe.")
+			}
+		}
+	}
+
+	// Check that no columns are duplicated between the two frames (other than primaryKey).
+	for _, col := range columns {
+		for k, _ := range frame.Headers {
+			if col == k && col != primaryKey {
+				panic("The following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
 			}
 		}
 	}

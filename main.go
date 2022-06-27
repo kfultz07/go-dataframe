@@ -302,6 +302,60 @@ func (frame DataFrame) ConcatFrames(dfNew *DataFrame) DataFrame {
 	return frame
 }
 
+func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...string) {
+	// Import all columns from right frame into left frame if no columns
+	// are provided by the user. Process must be done so in order.
+	if len(columns) == 0 {
+		for i := 0; i < len(dfRight.Headers); i++ {
+			for k, v := range dfRight.Headers {
+				if v == i {
+					columns = append(columns, k)
+				}
+			}
+		}
+	} else {
+		// Ensure columns user provided are all found in right frame.
+		for _, col := range columns {
+			colStatus := false
+			for k, _ := range dfRight.Headers {
+				if col == k {
+					colStatus = true
+				}
+			}
+			if colStatus != true {
+				panic("Merge Error: User provided column not found in right dataframe.")
+			}
+		}
+	}
+
+	// Load map indicating the location of each lookup value in right frame.
+	lookup := make(map[string]int)
+	for i, row := range dfRight.FrameRecords {
+		lookup[row.Val(primaryKey, dfRight.Headers)] = i
+	}
+
+	// Create new columns in left frame.
+	for _, col := range columns {
+		if col != primaryKey {
+			frame.NewField(col)
+		}
+	}
+
+	// Iterate over left frame and add new data.
+	for _, row := range frame.FrameRecords {
+		lookupVal := row.Val(primaryKey, frame.Headers)
+
+		if val, ok := lookup[lookupVal]; ok {
+			for _, col := range columns {
+				if col != primaryKey {
+					valToAdd := dfRight.FrameRecords[val].Data[dfRight.Headers[col]]
+					row.Update(col, valToAdd, frame.Headers)
+				}
+			}
+		}
+	}
+}
+
 func (frame *DataFrame) CountRecords() int {
 	return len(frame.FrameRecords)
 }

@@ -363,6 +363,96 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
+func TestMergeFramesAllColumns(t *testing.T) {
+	path := "./"
+
+	// Prep left frame
+	df := CreateDataFrame(path, "TestData.csv")
+	newData := [6]string{"11", "2022-06-27", "5467", "9586", "Cassandra", "SchmaSandra"}
+	df = df.AddRecord(newData[:])
+
+	// Prep right frame
+	dfRight := CreateDataFrame(path, "TestMergeData.csv")
+
+	// Merge
+	df.Merge(&dfRight, "ID")
+
+	if df.CountRecords() != 11 {
+		t.Error("Merge: record count error.")
+	}
+
+	m := make(map[string][]string)
+	m["2"] = []string{"RICHLAND", "WA", "99354"}
+	m["4"] = []string{"VAN BUREN", "AR", "72956"}
+	m["6"] = []string{"FISHERS", "NY", "14453"}
+	m["10"] = []string{"JEFFERSON CITY", "MO", "65109"}
+	m["11"] = []string{"", "", ""}
+
+	for _, row := range df.FrameRecords {
+		if val, ok := m[row.Val("ID", df.Headers)]; ok {
+			for i, v := range val {
+				switch i {
+				case 0:
+					if row.Val("City", df.Headers) != v {
+						t.Error("Merge: city error.")
+					}
+				case 1:
+					if row.Val("State", df.Headers) != v {
+						t.Error("Merge: state error.")
+					}
+				case 2:
+					if row.Val("Postal Code", df.Headers) != v {
+						t.Error("Merge: postal code error.")
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestMergeFramesSpecifiedColumns(t *testing.T) {
+	path := "./"
+
+	// Prep left frame
+	df := CreateDataFrame(path, "TestData.csv")
+	newData := [6]string{"11", "2022-06-27", "5467", "9586", "Cassandra", "SchmaSandra"}
+	df = df.AddRecord(newData[:])
+
+	// Prep right frame
+	dfRight := CreateDataFrame(path, "TestMergeData.csv")
+
+	// Merge
+	df.Merge(&dfRight, "ID", "City", "Postal Code")
+
+	if df.CountRecords() != 11 {
+		t.Error("Merge: record count error.")
+	}
+
+	m := make(map[string][]string)
+	m["2"] = []string{"RICHLAND", "99354"}
+	m["4"] = []string{"VAN BUREN", "72956"}
+	m["6"] = []string{"FISHERS", "14453"}
+	m["10"] = []string{"JEFFERSON CITY", "65109"}
+	m["11"] = []string{"", ""}
+
+	for _, row := range df.FrameRecords {
+		if val, ok := m[row.Val("ID", df.Headers)]; ok {
+			for i, v := range val {
+				switch i {
+				case 0:
+					if row.Val("City", df.Headers) != v {
+						t.Error("Merge: city error.")
+					}
+				case 1:
+					if row.Val("Postal Code", df.Headers) != v {
+						t.Error("Merge: postal code error.")
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestConcatFrames(t *testing.T) {
 	path := "./"
 	dfOne := CreateDataFrame(path, "TestData.csv")

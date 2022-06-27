@@ -76,6 +76,20 @@ for _, row := range df.FrameRecords {
 df = df.ConcatFrames(&dfFil)
 ```
 
+# Merge two DataFrames
+```go
+df := CreateDataFrame(path, "TestData.csv")
+dfRight := CreateDataFrame(path, "TestDataRight.csv")
+
+// Merge all columns found in right frame into left frame.
+// User provides the lookup column with the unique values that link the two DataFrames.
+df.Merge(&dfRight, "ID")
+
+// Merge only specified columns from right frame into left frame.
+// User provides columns immediately after the lookup column.
+df.Merge(&dfRight, "ID", "City", "State")
+```
+
 # Various Metrics & Tools
 ```go
 // Total rows

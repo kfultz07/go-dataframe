@@ -64,7 +64,7 @@ df = df.AddRecord(data[:])
 for _, row := range df.FrameRecords {
     // row.Val() is used to extract the value in a specific column while iterating.
     if row.Val("Last Name", df.Headers) == "McPoyle" {
-        row.Update("Last Name", "SchmicMcPoyle")
+        row.Update("Last Name", "SchmicMcPoyle", df.Headers)
     }
 }
 ```

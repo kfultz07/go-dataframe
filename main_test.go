@@ -412,6 +412,31 @@ func TestConcatFrames(t *testing.T) {
 	}
 }
 
+// Ensures once a new filtered DataFrame is created, if records are updated in the original
+// it will not affect the records in the newly created filtered version.
+func TestCopiedFrame(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	df2 := df.Filtered("Last Name", "Wiedmann")
+
+	// Update data in original frame.
+	for _, row := range df.FrameRecords {
+		if row.Val("First Name", df.Headers) == "Peter" && row.Val("Last Name", df.Headers) == "Wiedmann" {
+			row.Update("Last Name", "New Last Name", df.Headers)
+		}
+	}
+
+	// Check value did not change in newly copied frame.
+	for _, row := range df2.FrameRecords {
+		if row.Val("ID", df2.Headers) == "4" {
+			if row.Val("First Name", df2.Headers) != "Peter" || row.Val("Last Name", df2.Headers) != "Wiedmann" {
+				t.Error("Copied Frame: name appears to have changed in second frame.")
+			}
+		}
+	}
+}
+
 func TestSaveDataFrame(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")

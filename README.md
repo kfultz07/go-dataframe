@@ -13,7 +13,7 @@ import (
 )
 ```
 
-# Read CSV into DataFrame, create new field and save to a new file.
+# Read CSV into DataFrame, create new field and save to a new file
 ```go
 path := "/Users/Name/Desktop/"
 
@@ -38,7 +38,7 @@ for _, row := range df.FrameRecords {
 df.SaveDataFrame(path, "NewFileName")
 ```
 
-# Load a DataFrame from an AWS S3 Bucket.
+# Load a DataFrame from an AWS S3 Bucket
 ```go
 path := "/Users/Name/Desktop/" // File path.
 fileName := "FileName.csv" // File in AWS Bucket must be .csv

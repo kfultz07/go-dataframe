@@ -115,7 +115,7 @@ func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 		for _, column := range columns {
 			newData = append(newData, row.Val(column, frame.Headers))
 		}
-		df.AddRecord(newData)
+		df = df.AddRecord(newData)
 	}
 
 	return df

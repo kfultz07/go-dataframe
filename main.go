@@ -134,6 +134,27 @@ func (frame DataFrame) AddRecord(newData []string) DataFrame {
 	return frame
 }
 
+// Generates a decoupled copy of an existing DataFrame.
+// Changes made to either the original or new copied frame.
+// will not be reflected in the other.
+func (frame DataFrame) Copy() DataFrame {
+	headers := []string{}
+
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
+			}
+		}
+	}
+	df := CreateNewDataFrame(headers)
+
+	for i := 0; i < len(frame.FrameRecords); i++ {
+		df = df.AddRecord(frame.FrameRecords[i].Data)
+	}
+	return df
+}
+
 // Generates a new filtered DataFrame.
 // New DataFrame will be kept in same order as original.
 func (frame DataFrame) Filtered(fieldName string, value ...string) DataFrame {

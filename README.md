@@ -116,9 +116,13 @@ average := df.Average("Weight")
 minimum := df.Min("Cost")
 maximum := df.Max("Cost")
 
-// Returns a slice of all unique values in a specified field.
+// Returns a slice of all unique values in a specified field
 lastNames := df.Unique("Last Name")
 
-// Print all columns to console.
+// Print all columns to console
 df.ViewColumns()
+
+// Generates a decoupled copy of an existing DataFrame.
+// Changes made in one frame will not be reflected in the other.
+df2 := df.Copy()
 ```

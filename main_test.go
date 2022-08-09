@@ -586,3 +586,46 @@ func TestAssortment(t *testing.T) {
 	}
 
 }
+
+func TestCopy(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	df2 := df.Copy()
+
+	for _, row := range df2.FrameRecords {
+		if row.Val("First Name", df2.Headers) == "Bryan" && row.Val("Last Name", df2.Headers) == "Curtis" {
+			row.Update("First Name", "Brian", df2.Headers)
+		}
+		if row.Val("First Name", df2.Headers) == "Carl" && row.Val("Last Name", df2.Headers) == "Carlson" {
+			row.Update("First Name", "McCarlson", df2.Headers)
+		}
+	}
+
+	// Test original frame did not change.
+	for _, row := range df.FrameRecords {
+		if row.Val("Last Name", df.Headers) == "Curtis" {
+			if row.Val("First Name", df.Headers) != "Bryan" {
+				t.Error("First Name in original frame is not correct.")
+			}
+		}
+		if row.Val("Last Name", df.Headers) == "Carlson" {
+			if row.Val("First Name", df.Headers) != "Carl" {
+				t.Error("First Name in original frame is not correct.")
+			}
+		}
+	}
+
+	// Test copied frame contains changes.
+	for _, row := range df2.FrameRecords {
+		if row.Val("Last Name", df2.Headers) == "Curtis" {
+			if row.Val("First Name", df2.Headers) != "Brian" {
+				t.Error("First Name in copied frame is not correct.")
+			}
+		}
+		if row.Val("Last Name", df2.Headers) == "Carlson" {
+			if row.Val("First Name", df2.Headers) != "McCarlson" {
+				t.Error("First Name in copied frame is not correct.")
+			}
+		}
+	}
+}

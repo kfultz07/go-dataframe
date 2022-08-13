@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"fmt"
+	"log"
 	"testing"
 	"time"
 )
@@ -481,7 +482,10 @@ func TestConcatFrames(t *testing.T) {
 		"Highman",
 	}
 
-	dfOne = dfOne.ConcatFrames(&df)
+	dfOne, err := dfOne.ConcatFrames(&df)
+	if err != nil {
+		t.Error("Concat Frames: ", err)
+	}
 	var totalCost int64
 	var totalWeight int64
 
@@ -499,6 +503,37 @@ func TestConcatFrames(t *testing.T) {
 
 	if dfOne.CountRecords() != 20 {
 		t.Error("Concat Frames Failed: Row Count")
+	}
+}
+
+func TestConcatFramesColumnCount(t *testing.T) {
+	path := "./"
+	dfOne := CreateDataFrame(path, "TestData.csv")
+	columns := []string{"one", "two", "three"}
+	dfTwo := CreateNewDataFrame(columns)
+
+	dfOne, err := dfOne.ConcatFrames(&dfTwo)
+	if err == nil {
+		t.Error("Concat Frames Did Not Fail --> ", err)
+	}
+}
+
+func TestConcatFramesColumnOrder(t *testing.T) {
+	path := "./"
+	dfOne := CreateDataFrame(path, "TestData.csv")
+	columns := []string{
+		"ID",
+		"Date",
+		"Cost",
+		"Weight",
+		"Last Name",
+		"First Name",
+	}
+	dfTwo := CreateNewDataFrame(columns)
+
+	dfOne, err := dfOne.ConcatFrames(&dfTwo)
+	if err == nil {
+		t.Error("Concat Frames Did Not Fail --> ", err)
 	}
 }
 
@@ -542,7 +577,10 @@ func TestAssortment(t *testing.T) {
 	// Concatenate Frames
 	dfOne := CreateDataFrame(path, "TestData.csv")
 	df := CreateDataFrame(path, "TestDataConcat.csv")
-	df = df.ConcatFrames(&dfOne)
+	df, err := df.ConcatFrames(&dfOne)
+	if err != nil {
+		log.Fatal("Concat Frames: ", err)
+	}
 
 	// Add Records
 	newData := [6]string{"21", "2022-01-01", "200", "585", "Tommy", "Thompson"}

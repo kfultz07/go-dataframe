@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -315,12 +316,42 @@ func (frame *DataFrame) Unique(fieldName string) []string {
 }
 
 // Stack two DataFrames with matching headers.
-func (frame DataFrame) ConcatFrames(dfNew *DataFrame) DataFrame {
+func (frame DataFrame) ConcatFrames(dfNew *DataFrame) (DataFrame, error) {
+	// Check number of columns in each frame match.
+	if len(frame.Headers) != len(dfNew.Headers) {
+		return frame, errors.New("Cannot ConcatFrames as columns do not match.")
+	}
+
+	// Check columns in both frames are in the same order.
+	originalFrame := []string{}
+	for i := 0; i <= len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				originalFrame = append(originalFrame, k)
+			}
+		}
+	}
+
+	newFrame := []string{}
+	for i := 0; i <= len(dfNew.Headers); i++ {
+		for k, v := range dfNew.Headers {
+			if v == i {
+				newFrame = append(newFrame, k)
+			}
+		}
+	}
+
+	for i, each := range originalFrame {
+		if each != newFrame[i] {
+			return frame, errors.New("Cannot ConcatFrames as columns are not in the same order.")
+		}
+	}
+
 	// Iterate over new dataframe in order
 	for i := 0; i < len(dfNew.FrameRecords); i++ {
 		frame.FrameRecords = append(frame.FrameRecords, dfNew.FrameRecords[i])
 	}
-	return frame
+	return frame, nil
 }
 
 func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...string) {

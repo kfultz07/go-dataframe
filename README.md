@@ -83,7 +83,7 @@ for _, row := range df.FrameRecords {
 # Concatenate a DataFrame
 ```go
 // ConcatFrames uses a pointer to the second DataFrame to add to the first.
-// Both DataFrames must have the same columns.
+// Both DataFrames must have the same columns in the same order.
 df, err := df.ConcatFrames(&dfFil)
 if err != nil {
     panic("ConcatFrames Error: ", err)

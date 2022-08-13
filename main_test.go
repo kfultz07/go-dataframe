@@ -516,6 +516,7 @@ func TestConcatFramesColumnCount(t *testing.T) {
 	if err == nil {
 		t.Error("Concat Frames Did Not Fail --> ", err)
 	}
+	dfOne.SaveDataFrame(path, "test")
 }
 
 func TestConcatFramesColumnOrder(t *testing.T) {

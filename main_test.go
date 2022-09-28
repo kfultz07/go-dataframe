@@ -506,6 +506,24 @@ func TestConcatFrames(t *testing.T) {
 	}
 }
 
+func TestConcatFramesAddress(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	df2 := CreateDataFrame(path, "TestDataConcat.csv")
+
+	df3, err := df.ConcatFrames(&df2)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if &df == &df3 || &df2 == &df3 {
+		t.Error("ConcatFrames did not create a truly decoupled new dataframe")
+	}
+	if df3.CountRecords() != 20 {
+		t.Error("ConcatFrames did not properly append")
+	}
+}
+
 func TestConcatFramesColumnCount(t *testing.T) {
 	path := "./"
 	dfOne := CreateDataFrame(path, "TestData.csv")
@@ -666,5 +684,15 @@ func TestCopy(t *testing.T) {
 				t.Error("First Name in copied frame is not correct.")
 			}
 		}
+	}
+}
+
+func TestCopyAddress(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	df2 := df.Copy()
+
+	if &df == &df2 {
+		t.Error("Copy did not create a truly decoupled copy.")
 	}
 }

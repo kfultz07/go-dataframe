@@ -21,12 +21,12 @@ type DataFrame struct {
 	Headers      map[string]int
 }
 
-// Generate a new empty DataFrame.
+// Generate a new empty DataFrame
 func CreateNewDataFrame(headers []string) DataFrame {
 	myRecords := []Record{}
 	theHeaders := make(map[string]int)
 
-	// Add headers to map in correct order.
+	// Add headers to map in correct order
 	for i := 0; i < len(headers); i++ {
 		theHeaders[headers[i]] = i
 	}
@@ -36,7 +36,7 @@ func CreateNewDataFrame(headers []string) DataFrame {
 	return newFrame
 }
 
-// Generate a new DataFrame sourced from a csv file.
+// Generate a new DataFrame sourced from a csv file
 func CreateDataFrame(path, fileName string) DataFrame {
 	// Check user entries
 	if path[len(path)-1:] != "/" {
@@ -45,10 +45,6 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	if strings.Contains(fileName, ".csv") != true {
 		fileName = fileName + ".csv"
 	}
-	// 1. Read in file
-	// 2. Iterate over rows on CSV file and create Record objects
-	// 3. Store Records in a map
-	// 4. Returns the map with the records as well as an array of the column headers
 
 	// Open the CSV file
 	recordFile, err := os.Open(path + fileName)
@@ -65,7 +61,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		log.Fatal("Error reading the records")
 	}
 
-	// Remove Byte Order Marker for UTF-8 files.
+	// Remove Byte Order Marker for UTF-8 files
 	for i, each := range header {
 		byteSlice := []byte(each)
 		if byteSlice[0] == 239 && byteSlice[1] == 187 && byteSlice[2] == 191 {
@@ -78,36 +74,31 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		headers[columnName] = i
 	}
 
-	// Empty map to store struct objects
-	sliceOfSlices := []Record{}
+	// Empty slice to store Records
+	s := []Record{}
 
-	// Loop over the records and create Record objects.
+	// Loop over the records and create Record objects to be stored
 	for i := 0; ; i++ {
 		record, err := reader.Read()
 		if err == io.EOF {
-			break // Reached end of file
+			break
 		} else if err != nil {
 			log.Fatal("Error in record loop.")
 		}
-		// Create the new Record
+		// Create new Record
 		x := Record{[]string{}}
 
-		// Loop over records and add to Data field of Record struct.
+		// Loop over records and add to Data field of Record struct
 		for _, r := range record {
 			x.Data = append(x.Data, r)
 		}
-
-		// Add Record object to map
-		// myRecords[i] = x
-		sliceOfSlices = append(sliceOfSlices, x)
+		s = append(s, x)
 	}
-
-	newFrame := DataFrame{FrameRecords: sliceOfSlices, Headers: headers}
-
+	newFrame := DataFrame{FrameRecords: s, Headers: headers}
 	return newFrame
 }
 
-// User specifies columns they want to keep from a preexisting DataFrame.
+// User specifies columns they want to keep from a preexisting DataFrame
 func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 	df := CreateNewDataFrame(columns)
 
@@ -122,7 +113,7 @@ func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 	return df
 }
 
-// Add a new record to the DataFrame.
+// Add a new record to the DataFrame
 func (frame DataFrame) AddRecord(newData []string) DataFrame {
 	x := Record{[]string{}}
 
@@ -136,7 +127,7 @@ func (frame DataFrame) AddRecord(newData []string) DataFrame {
 }
 
 // Generates a decoupled copy of an existing DataFrame.
-// Changes made to either the original or new copied frame.
+// Changes made to either the original or new copied frame
 // will not be reflected in the other.
 func (frame DataFrame) Copy() DataFrame {
 	headers := []string{}
@@ -204,8 +195,8 @@ func (frame DataFrame) Exclude(fieldName string, value ...string) DataFrame {
 
 // Generates a new filtered DataFrame with all records occuring after a specified date provided by the user.
 // User must provide the date field as well as the desired date.
-// Instances where record dates occur on the same date provided by the user will not be included. Records must occur
-// after the specified date.
+// Instances where record dates occur on the same date provided by the user will not be included.
+// Records must occur after the specified date.
 func (frame DataFrame) FilteredAfter(fieldName, desiredDate string) DataFrame {
 	headers := []string{}
 
@@ -563,9 +554,9 @@ func (x Record) ConvertToInt(fieldName string, headers map[string]int) int64 {
 	return value
 }
 
-// Converts various date strings into time.Time.
+// Converts various date strings into time.Time
 func dateConverter(dateString string) time.Time {
-	// Convert date if not in 2006-01-02 format.
+	// Convert date if not in 2006-01-02 format
 	if strings.Contains(dateString, "/") {
 		dateSlice := strings.Split(dateString, "/")
 
@@ -588,7 +579,7 @@ func dateConverter(dateString string) time.Time {
 	return value
 }
 
-// Converts date from specified field to time.Time.
+// Converts date from specified field to time.Time
 func (x Record) ConvertToDate(fieldName string, headers map[string]int) time.Time {
 	result := dateConverter(x.Val(fieldName, headers))
 	return result

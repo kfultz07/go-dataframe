@@ -126,6 +126,20 @@ func (frame DataFrame) AddRecord(newData []string) DataFrame {
 	return frame
 }
 
+// Provides a slice of columns in order
+func (frame DataFrame) Columns() []string {
+	var columns []string
+
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				columns = append(columns, k)
+			}
+		}
+	}
+	return columns
+}
+
 // Generates a decoupled copy of an existing DataFrame.
 // Changes made to either the original or new copied frame
 // will not be reflected in the other.

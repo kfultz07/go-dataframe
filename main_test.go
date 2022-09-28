@@ -3,6 +3,7 @@ package dataframe
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -694,5 +695,69 @@ func TestCopyAddress(t *testing.T) {
 
 	if &df == &df2 {
 		t.Error("Copy did not create a truly decoupled copy.")
+	}
+}
+
+func TestColumns(t *testing.T) {
+	path := "./"
+	requiredColumns := []string{
+		"ID",
+		"Date",
+		"Cost",
+		"Weight",
+		"First Name",
+		"Last Name",
+	}
+	df := CreateDataFrame(path, "TestData.csv")
+	foundColumns := df.Columns()
+
+	if len(foundColumns) != 6 {
+		t.Error("Length of found columns does not match")
+	}
+
+	for i := 0; i < len(requiredColumns); i++ {
+		if foundColumns[i] != requiredColumns[i] {
+			t.Error("Order of found columns does not match")
+		}
+	}
+}
+
+func TestAutoCount(t *testing.T) {
+	columns := []string{"id", "number", "value"}
+	df := CreateNewDataFrame(columns)
+
+	for i := 0; i < 1_000; i++ {
+		val := float64(i + 1)
+		sq := val * val
+		data := []string{
+			strconv.Itoa(i),
+			fmt.Sprintf("%f", val),
+			fmt.Sprintf("%f", sq),
+		}
+		df = df.AddRecord(data)
+	}
+
+	if df.CountRecords() != 1_000 {
+		t.Error("Test Auto: count is not 1,000,000")
+	}
+}
+
+func TestAutoSum(t *testing.T) {
+	columns := []string{"id", "number", "value"}
+	df := CreateNewDataFrame(columns)
+
+	for i := 0; i < 1_000; i++ {
+		val := float64(i + 1)
+		sq := val * val
+		data := []string{
+			strconv.Itoa(i),
+			fmt.Sprintf("%f", val),
+			fmt.Sprintf("%f", sq),
+		}
+		df = df.AddRecord(data)
+	}
+
+	if df.Sum("value") != 333_833_500.0 {
+		t.Error("Test Auto: sum is not correct")
 	}
 }

@@ -125,6 +125,9 @@ lastNames := df.Unique("Last Name")
 // Print all columns to console
 df.ViewColumns()
 
+// Returns a slice of all columns in order
+foundColumns := df.Columns()
+
 // Generates a decoupled copy of an existing DataFrame.
 // Changes made in one DataFrame will not be reflected in the other.
 df2 := df.Copy()

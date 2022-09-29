@@ -38,6 +38,42 @@ for _, row := range df.FrameRecords {
 df.SaveDataFrame(path, "NewFileName")
 ```
 
+# Concurrently load multiple CSV files into DataFrames
+Files must all be in the same directory. Results returned from the LoadFrames function is a map[string]DataFrame as concurrent programs are not guaranteed to return results in the same order.
+```go
+path := "/Users/Name/Desktop/"
+files := []string{
+    "One.csv",
+    "Two.csv",
+    "Three.csv",
+    "Four.csv",
+    "Five.csv",
+}
+
+results := LoadFrames(filePath, files)
+
+var dfOne DataFrame
+var dfTwo DataFrame
+var dfThree DataFrame
+var dfFour DataFrame
+var dfFive DataFrame
+
+for k, v := range results {
+    switch k {
+    case files[0]:
+        dfOne = v.Copy()
+    case files[1]:
+        dfTwo = v.Copy()
+    case files[2]:
+        dfThree = v.Copy()
+    case files[3]:
+        dfFour = v.Copy()
+    case files[4]:
+        dfFive = v.Copy()
+    }
+}
+```
+
 # Load a DataFrame from an AWS S3 Bucket
 ```go
 path := "/Users/Name/Desktop/" // File path

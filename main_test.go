@@ -810,4 +810,9 @@ func TestLoadFrames(t *testing.T) {
 	if dfMerge.CountRecords() != 10 || dfMerge.Sum("Postal Code") != 495735.0 || len(dfMerge.Columns()) != 4 {
 		t.Error("LoadFrames: TestMergeData.csv is not correct")
 	}
+
+	dfFilterTest := results["TestData.csv"].Filtered("Last Name", "Fultz")
+	if dfTd.CountRecords() == dfFilterTest.CountRecords() {
+		t.Error("LoadFrame: variable referencing map value")
+	}
 }

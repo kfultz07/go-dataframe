@@ -41,7 +41,7 @@ df.SaveDataFrame(path, "NewFileName")
 # Concurrently load multiple CSV files into DataFrames
 Files must all be in the same directory. Results returned from the LoadFrames function is a map[string]DataFrame as concurrent programs are not guaranteed to return results in the same order.
 ```go
-path := "/Users/Name/Desktop/"
+filePath := "/Users/Name/Desktop/"
 files := []string{
     "One.csv",
     "Two.csv",

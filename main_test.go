@@ -783,15 +783,15 @@ func TestLoadFrames(t *testing.T) {
 	for k, v := range results {
 		switch k {
 		case files[0]:
-			dfTd = v.Copy()
+			dfTd = v
 		case files[1]:
-			dfComma = v.Copy()
+			dfComma = v
 		case files[2]:
-			dfConcat = v.Copy()
+			dfConcat = v
 		case files[3]:
-			dfDate = v.Copy()
+			dfDate = v
 		case files[4]:
-			dfMerge = v.Copy()
+			dfMerge = v
 		}
 	}
 

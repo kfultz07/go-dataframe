@@ -61,15 +61,15 @@ var dfFive DataFrame
 for k, v := range results {
     switch k {
     case files[0]:
-        dfOne = v.Copy()
+        dfOne = v
     case files[1]:
-        dfTwo = v.Copy()
+        dfTwo = v
     case files[2]:
-        dfThree = v.Copy()
+        dfThree = v
     case files[3]:
-        dfFour = v.Copy()
+        dfFour = v
     case files[4]:
-        dfFive = v.Copy()
+        dfFive = v
     }
 }
 ```

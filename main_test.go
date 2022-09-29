@@ -761,3 +761,53 @@ func TestAutoSum(t *testing.T) {
 		t.Error("Test Auto: sum is not correct")
 	}
 }
+
+func TestLoadFrames(t *testing.T) {
+	filePath := "./"
+	files := []string{
+		"TestData.csv",
+		"TestDataCommaSeparatedValue.csv",
+		"TestDataConcat.csv",
+		"TestDataDateFormat.csv",
+		"TestMergeData.csv",
+	}
+
+	results := LoadFrames(filePath, files)
+
+	var dfTd DataFrame
+	var dfComma DataFrame
+	var dfConcat DataFrame
+	var dfDate DataFrame
+	var dfMerge DataFrame
+
+	for k, v := range results {
+		switch k {
+		case files[0]:
+			dfTd = v.Copy()
+		case files[1]:
+			dfComma = v.Copy()
+		case files[2]:
+			dfConcat = v.Copy()
+		case files[3]:
+			dfDate = v.Copy()
+		case files[4]:
+			dfMerge = v.Copy()
+		}
+	}
+
+	if dfTd.CountRecords() != 10 || dfTd.Sum("Weight") != 3376.0 || len(dfTd.Columns()) != 6 {
+		t.Error("LoadFrames: TestData.csv is not correct")
+	}
+	if dfComma.CountRecords() != 10 || dfComma.Sum("Cost") != 6521.0 || len(dfComma.Columns()) != 6 {
+		t.Error("LoadFrames: TestDataCommaSeparatedValue.csv is not correct")
+	}
+	if dfConcat.CountRecords() != 10 || dfConcat.Sum("Weight") != 445.0 || len(dfConcat.Columns()) != 6 {
+		t.Error("LoadFrames: TestDataConcat.csv is not correct")
+	}
+	if dfDate.CountRecords() != 10 || dfDate.Average("Cost") != 652.1 || len(dfDate.Columns()) != 6 {
+		t.Error("LoadFrames: TestDataDateFormat.csv is not correct")
+	}
+	if dfMerge.CountRecords() != 10 || dfMerge.Sum("Postal Code") != 495735.0 || len(dfMerge.Columns()) != 4 {
+		t.Error("LoadFrames: TestMergeData.csv is not correct")
+	}
+}

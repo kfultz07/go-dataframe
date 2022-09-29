@@ -98,6 +98,45 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	return newFrame
 }
 
+func worker(jobs <-chan string, results chan<- DataFrame, resultsNames chan<- string, filePath string) {
+	for n := range jobs {
+		df := CreateDataFrame(filePath, n)
+		results <- df
+		resultsNames <- n
+	}
+}
+
+// Concurrently loads multiple csv files into DataFrames within the same directory.
+// Returns a map with the filename as the key. This is for variable assignment purposes
+// as concurrent programs are not guaranteed to return results in the same order.
+func LoadFrames(filePath string, files []string) map[string]DataFrame {
+	numJobs := len(files)
+
+	jobs := make(chan string, numJobs)
+	results := make(chan DataFrame, numJobs)
+	resultsNames := make(chan string, numJobs)
+
+	// Generate workers
+	for i := 0; i < 4; i++ {
+		go worker(jobs, results, resultsNames, filePath)
+	}
+
+	// Load up the jobs channel
+	for i := 0; i < numJobs; i++ {
+		jobs <- files[i]
+	}
+	close(jobs) // Close jobs channel once loaded
+
+	// Map to store results
+	jobResults := make(map[string]DataFrame)
+
+	// Collect results and store in map
+	for i := 1; i <= numJobs; i++ {
+		jobResults[<-resultsNames] = <-results
+	}
+	return jobResults
+}
+
 // User specifies columns they want to keep from a preexisting DataFrame
 func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 	df := CreateNewDataFrame(columns)

@@ -772,7 +772,10 @@ func TestLoadFrames(t *testing.T) {
 		"TestMergeData.csv",
 	}
 
-	results := LoadFrames(filePath, files)
+	results, err := LoadFrames(filePath, files)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var dfTd DataFrame
 	var dfComma DataFrame
@@ -815,4 +818,15 @@ func TestLoadFrames(t *testing.T) {
 	if dfTd.CountRecords() == dfFilterTest.CountRecords() {
 		t.Error("LoadFrame: variable referencing map value")
 	}
+}
+
+func TestLoadFramesError(t *testing.T) {
+	filePath := "./"
+	files := []string{"TestData.csv"}
+
+	results, err := LoadFrames(filePath, files)
+	if err == nil {
+		t.Error("LoadFrames did not fail as expected")
+	}
+	fmt.Println(results)
 }

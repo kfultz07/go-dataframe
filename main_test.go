@@ -824,9 +824,68 @@ func TestLoadFramesError(t *testing.T) {
 	filePath := "./"
 	files := []string{"TestData.csv"}
 
-	results, err := LoadFrames(filePath, files)
+	_, err := LoadFrames(filePath, files)
 	if err == nil {
 		t.Error("LoadFrames did not fail as expected")
 	}
-	fmt.Println(results)
+}
+
+func TestRename(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	err := df.Rename("Weight", "Total Weight")
+	if err != nil {
+		t.Error(err)
+	}
+
+	for _, row := range df.FrameRecords {
+		if row.Val("First Name", df.Headers) == "Andy" && row.Val("Last Name", df.Headers) == "Wiedmann" {
+			row.Update("Total Weight", "1000", df.Headers)
+		}
+	}
+
+	for _, row := range df.FrameRecords {
+		if row.Val("First Name", df.Headers) == "Andy" && row.Val("Last Name", df.Headers) == "Wiedmann" {
+			if row.Val("Total Weight", df.Headers) != "1000" {
+				t.Error("Value in new column did not update correctly")
+			}
+		}
+	}
+
+	foundColumns := []string{}
+	newColumnStatus := false
+	for k, _ := range df.Headers {
+		foundColumns = append(foundColumns, k)
+		if k == "Total Weight" {
+			newColumnStatus = true
+		}
+	}
+
+	if newColumnStatus != true {
+		t.Error("New column was not found")
+	}
+	if len(foundColumns) != 6 {
+		t.Error("Wrong number of columns found")
+	}
+}
+
+func TestRenameOriginalNotFound(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	err := df.Rename("The Weight", "Total Weight")
+	if err == nil {
+		t.Error(err)
+	}
+}
+
+func TestRenameDuplicate(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	err := df.Rename("Weight", "Cost")
+	if err == nil {
+		t.Error(err)
+	}
 }

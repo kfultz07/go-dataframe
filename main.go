@@ -156,6 +156,37 @@ func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 	return df
 }
 
+// Rename a specified column in the DataFrame
+func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
+	columns := []string{}
+	var columnLocation int
+
+	for k, v := range frame.Headers {
+		columns = append(columns, k)
+		if k == originalColumnName {
+			columnLocation = v
+		}
+	}
+
+	// Check original column name is found in DataFrame
+	if contains(columns, originalColumnName) == false {
+		return errors.New("The original column name provided was not found in the DataFrame")
+	}
+
+	// Check new column name does not already exist
+	if contains(columns, newColumnName) == true {
+		return errors.New("The provided new column name already exists in the DataFrame and is not allowed")
+	}
+
+	// Remove original column name
+	delete(frame.Headers, originalColumnName)
+
+	// Add new column name
+	frame.Headers[newColumnName] = columnLocation
+
+	return nil
+}
+
 // Add a new record to the DataFrame
 func (frame DataFrame) AddRecord(newData []string) DataFrame {
 	x := Record{[]string{}}
@@ -402,9 +433,9 @@ func (frame DataFrame) ConcatFrames(dfNew *DataFrame) (DataFrame, error) {
 	return frame, nil
 }
 
+// Import all columns from right frame into left frame if no columns
+// are provided by the user. Process must be done so in order.
 func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...string) {
-	// Import all columns from right frame into left frame if no columns
-	// are provided by the user. Process must be done so in order.
 	if len(columns) == 0 {
 		for i := 0; i < len(dfRight.Headers); i++ {
 			for k, v := range dfRight.Headers {

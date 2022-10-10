@@ -129,6 +129,15 @@ if err != nil {
 }
 ```
 
+# Rename a Column
+```go
+// Rename an existing column in a DataFrame
+err := df.Rename("Weight", "Total Weight")
+if err != nil {
+    panic("Rename Column Error: ", err)
+}
+```
+
 # Merge two DataFrames
 ```go
 df := CreateDataFrame(path, "TestData.csv")

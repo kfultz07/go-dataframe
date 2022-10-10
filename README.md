@@ -132,6 +132,8 @@ if err != nil {
 # Rename a Column
 ```go
 // Rename an existing column in a DataFrame
+// First parameter provides the original column name to be updated.
+// The next parameter is the desired new name.
 err := df.Rename("Weight", "Total Weight")
 if err != nil {
     panic("Rename Column Error: ", err)

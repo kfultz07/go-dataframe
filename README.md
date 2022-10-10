@@ -77,8 +77,9 @@ for k, v := range results {
 }
 ```
 
-# Load a DataFrame from an AWS S3 Bucket
+# Load a DataFrame from an AWS S3 Bucket or Upload a file to AWS S3
 ```go
+// Download from S3
 path := "/Users/Name/Desktop/" // File path
 fileName := "FileName.csv" // File in AWS Bucket must be .csv
 bucketName := "BucketName" // Name of the bucket
@@ -86,6 +87,12 @@ bucketRegion := "BucketRegion" // Can be found in the Properties tab in the S3 c
 awsAccessKey := "AwsAccessKey" // Access keys can be loaded from environment variables within you program
 awsSecretKey := "AwsSecretKey"
 df := CreateDataFrameFromAwsS3(path, fileName, bucketName, bucketRegion, awsAccessKey, awsSecretKey)
+
+// Upload to S3
+err := UploadFileToAwsS3(path, fileName, bucket, region)
+if err != nil {
+    panic(err)
+}
 ```
 
 # Various methods to filter DataFrames

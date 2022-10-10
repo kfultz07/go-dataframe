@@ -1,6 +1,7 @@
 package dataframe
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -76,4 +77,39 @@ func CreateDataFrameFromAwsS3(path, item, bucket, region, awsAccessKey, awsSecre
 	df := CreateDataFrame(path, item)
 
 	return df
+}
+
+func UploadFileToAwsS3(path, filename, bucket, region string) error {
+	// Check user entries
+	if path[len(path)-1:] != "/" {
+		path = path + "/"
+	}
+
+	// Initialize an AWS session.
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(region)},
+	)
+	if err != nil {
+		panic("AWS S3: Error initializing session.")
+	}
+
+	// Create an uploader with the session and default options
+	uploader := s3manager.NewUploader(sess)
+
+	f, err := os.Open(path + filename)
+	if err != nil {
+		return errors.New("Failed to open file")
+	}
+
+	// Upload the file to S3.
+	result, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(filename),
+		Body:   f,
+	})
+	if err != nil {
+		return errors.New("Failed to upload file to AWS S3")
+	}
+	fmt.Printf("File successfully uploaded to, %s\n", aws.StringValue(&result.Location))
+	return nil
 }

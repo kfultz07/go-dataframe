@@ -77,9 +77,9 @@ for k, v := range results {
 }
 ```
 
-# Load a DataFrame from an AWS S3 Bucket or Upload a file to AWS S3
+# AWS S3 Cloud Storage
 ```go
-// Download from S3
+// Download a DataFrame from an S3 bucket
 path := "/Users/Name/Desktop/" // File path
 fileName := "FileName.csv" // File in AWS Bucket must be .csv
 bucketName := "BucketName" // Name of the bucket
@@ -88,7 +88,7 @@ awsAccessKey := "AwsAccessKey" // Access keys can be loaded from environment var
 awsSecretKey := "AwsSecretKey"
 df := CreateDataFrameFromAwsS3(path, fileName, bucketName, bucketRegion, awsAccessKey, awsSecretKey)
 
-// Upload to S3
+// Upload a file to an S3 bucket
 err := UploadFileToAwsS3(path, fileName, bucket, region)
 if err != nil {
     panic(err)

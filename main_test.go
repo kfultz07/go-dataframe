@@ -22,7 +22,7 @@ func TestDynamicMetrics(t *testing.T) {
 	recordedMin := 101.0
 	totalRecords := 1_000_000
 
-	for i := 0.0; i < float64(totalRecords); i++ {
+	for i := 0; i < totalRecords; i++ {
 		// Ensures differing values generated on each run.
 		rand.Seed(time.Now().UnixNano())
 		v := float64(rand.Intn(max-min)+min) + rand.Float64()
@@ -50,19 +50,19 @@ func TestDynamicMetrics(t *testing.T) {
 	recordedMin = math.Round(recordedMin*100) / 100
 
 	if dataFrameValue != sum {
-		t.Error("Sum float failed")
+		t.Error("Dynamic Metrics: sum float failed")
 	}
 	if dataFrameAvgValue != avg {
-		t.Error("Average float failed")
+		t.Error("Dynamic Metrics: average float failed")
 	}
 	if dataFrameMaxValue != recordedMax {
-		t.Error("Max value error", dataFrameMaxValue, recordedMax)
+		t.Error("Dynamic Metrics: max value error", dataFrameMaxValue, recordedMax)
 	}
 	if dataFrameMinValue != recordedMin {
-		t.Error("Min value error", dataFrameMinValue, recordedMin)
+		t.Error("Dynamic Metrics: min value error", dataFrameMinValue, recordedMin)
 	}
 	if df.CountRecords() != totalRecords {
-		t.Error("Count records error", df.CountRecords(), totalRecords)
+		t.Error("Dynamic Metrics: count records error", df.CountRecords(), totalRecords)
 	}
 }
 

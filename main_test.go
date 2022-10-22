@@ -3,10 +3,68 @@ package dataframe
 import (
 	"fmt"
 	"log"
+	"math"
+	"math/rand"
 	"strconv"
 	"testing"
 	"time"
 )
+
+func TestDynamicMetrics(t *testing.T) {
+	// Create DataFrame
+	columns := []string{"Value"}
+	df := CreateNewDataFrame(columns)
+
+	sum := 0.0
+	min := 1
+	max := 100
+	recordedMax := 0.0
+	recordedMin := 101.0
+	totalRecords := 1_000_000
+
+	for i := 0.0; i < float64(totalRecords); i++ {
+		// Ensures differing values generated on each run.
+		rand.Seed(time.Now().UnixNano())
+		v := float64(rand.Intn(max-min)+min) + rand.Float64()
+		sum = sum + v
+
+		// Add data to DataFrame
+		data := []string{fmt.Sprintf("%f", v)}
+		df = df.AddRecord(data)
+
+		if v > recordedMax {
+			recordedMax = v
+		}
+		if v < recordedMin {
+			recordedMin = v
+		}
+	}
+
+	dataFrameValue := math.Round(df.Sum("Value")*100) / 100
+	dataFrameAvgValue := math.Round(df.Average("Value")*100) / 100
+	dataFrameMaxValue := math.Round(df.Max("Value")*100) / 100
+	dataFrameMinValue := math.Round(df.Min("Value")*100) / 100
+	sum = math.Round(sum*100) / 100
+	avg := math.Round(sum/float64(totalRecords)*100) / 100
+	recordedMax = math.Round(recordedMax*100) / 100
+	recordedMin = math.Round(recordedMin*100) / 100
+
+	if dataFrameValue != sum {
+		t.Error("Sum float failed")
+	}
+	if dataFrameAvgValue != avg {
+		t.Error("Average float failed")
+	}
+	if dataFrameMaxValue != recordedMax {
+		t.Error("Max value error", dataFrameMaxValue, recordedMax)
+	}
+	if dataFrameMinValue != recordedMin {
+		t.Error("Min value error", dataFrameMinValue, recordedMin)
+	}
+	if df.CountRecords() != totalRecords {
+		t.Error("Count records error", df.CountRecords(), totalRecords)
+	}
+}
 
 func TestCreateDataFrameCostFloat(t *testing.T) {
 	path := "./"

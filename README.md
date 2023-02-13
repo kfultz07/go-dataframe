@@ -13,7 +13,7 @@ import (
 )
 ```
 
-# Read CSV into DataFrame, create new field and save to a new file
+# Load CSV into DataFrame, create a new field, and save
 ```go
 path := "/Users/Name/Desktop/"
 
@@ -39,7 +39,7 @@ df.SaveDataFrame(path, "NewFileName")
 ```
 
 # Concurrently load multiple CSV files into DataFrames
-Tests performed utilized four files with a total of 5,746,452 records with a varying number of columns. Tests indicated an average total load time of 8.81 seconds when loaded sequentially and 4.06 seconds when loaded concurrently utilizing the LoadFrames function. An overall 54% speed improvement. Files must all be in the same directory. Results returned from the LoadFrames function is a map[string]DataFrame as concurrent programs are not guaranteed to return results in the same order.
+Tests performed utilized four files with a total of 5,746,452 records and a varing number of columns. Results indicated an average total load time of 8.81 seconds when loaded sequentially and 4.06 seconds when loaded concurrently utilizing the LoadFrames function. An overall 54% speed improvement. Files must all be in the same directory. Results returned from the LoadFrames function in a map[string]DataFrame as concurrent programs are not guaranteed to return results in the same order.
 ```go
 filePath := "/Users/Name/Desktop/"
 files := []string{

@@ -49,7 +49,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Open the CSV file
 	recordFile, err := os.Open(path + fileName)
 	if err != nil {
-		log.Fatal("Error opening the file. Please ensure the path and filename are correct.")
+		log.Fatalf("Error opening the file. Please ensure the path and filename are correct. Message: %v", err)
 	}
 
 	// Setup the reader
@@ -58,7 +58,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Read the records
 	header, err := reader.Read()
 	if err != nil {
-		log.Fatal("Error reading the records")
+		log.Fatalf("Error reading the records: %v", err)
 	}
 
 	// Remove Byte Order Marker for UTF-8 files
@@ -83,7 +83,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			log.Fatal("Error in record loop.")
+			log.Fatalf("Error in record loop: %v", err)
 		}
 		// Create new Record
 		x := Record{[]string{}}
@@ -614,21 +614,21 @@ func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
 	return true
 }
 
+// Return the value of the specified field
 func (x Record) Val(fieldName string, headers map[string]int) string {
-	// Return the value of the specified field
 	return x.Data[headers[fieldName]]
 }
 
+// Update the value in a specified field
 func (x Record) Update(fieldName, value string, headers map[string]int) {
-	// Update the value in a specified field
 	x.Data[headers[fieldName]] = value
 }
 
+// Converts the value from a string to float64
 func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64 {
-	// Converts the value from a string to float64
 	value, err := strconv.ParseFloat(x.Val(fieldName, headers), 64)
 	if err != nil {
-		log.Fatal("Could Not Convert to float64")
+		log.Fatalf("Could Not Convert to float64: %v", err)
 	}
 	return value
 }
@@ -637,7 +637,7 @@ func (x Record) ConvertToInt(fieldName string, headers map[string]int) int64 {
 	// Converts the value from a string to int64
 	value, err := strconv.ParseInt(x.Val(fieldName, headers), 0, 64)
 	if err != nil {
-		log.Fatal("Could Not Convert to int64")
+		log.Fatalf("Could Not Convert to int64: %v", err)
 	}
 	return value
 }
@@ -662,7 +662,7 @@ func dateConverter(dateString string) time.Time {
 
 	value, err := time.Parse("2006-01-02", dateString)
 	if err != nil {
-		log.Fatal("Could Not Convert to time.Time")
+		log.Fatalf("Could Not Convert to time.Time: %v", err)
 	}
 	return value
 }

@@ -3,6 +3,7 @@ package dataframe
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -47,7 +48,7 @@ func CreateDataFrameFromAwsS3(path, item, bucket, region, awsAccessKey, awsSecre
 	// Create file.
 	file, err := os.Create(filePath)
 	if err != nil {
-		panic("AWS S3: Error creating the file.")
+		log.Fatalf("AWS S3: Error creating the file --> %v", err)
 	}
 
 	defer file.Close()
@@ -57,7 +58,7 @@ func CreateDataFrameFromAwsS3(path, item, bucket, region, awsAccessKey, awsSecre
 		Region: aws.String(region)},
 	)
 	if err != nil {
-		panic("AWS S3: Error initializing session.")
+		log.Fatalf("AWS S3: Error initializing session --> %v", err)
 	}
 
 	// Download file from AWS
@@ -69,7 +70,7 @@ func CreateDataFrameFromAwsS3(path, item, bucket, region, awsAccessKey, awsSecre
 			Key:    aws.String(item),
 		})
 	if err != nil {
-		panic("AWS S3: Error downloading the file.")
+		log.Fatalf("AWS S3: Error downloading the file --> %v", err)
 	}
 
 	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
@@ -90,7 +91,7 @@ func UploadFileToAwsS3(path, filename, bucket, region string) error {
 		Region: aws.String(region)},
 	)
 	if err != nil {
-		panic("AWS S3: Error initializing session.")
+		log.Fatalf("AWS S3: Error initializing session --> %v", err)
 	}
 
 	// Create an uploader with the session and default options
@@ -98,7 +99,7 @@ func UploadFileToAwsS3(path, filename, bucket, region string) error {
 
 	f, err := os.Open(path + filename)
 	if err != nil {
-		return errors.New("Failed to open file")
+		return errors.New("Failed to open file.")
 	}
 
 	// Upload the file to S3.

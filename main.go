@@ -156,6 +156,19 @@ func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 	return df
 }
 
+// User specifies columns they want to remove from a preexisting DataFrame
+func (frame DataFrame) RemoveColumns(columns ...string) DataFrame {
+	approvedColumns := []string{}
+
+	for _, col := range frame.Columns() {
+		if !contains(columns, col) {
+			approvedColumns = append(approvedColumns, col)
+		}
+	}
+
+	return frame.KeepColumns(approvedColumns)
+}
+
 // Rename a specified column in the DataFrame
 func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
 	columns := []string{}

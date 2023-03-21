@@ -321,8 +321,6 @@ func TestByteOrderMark(t *testing.T) {
 		t.Error("Byte Order Mark conversion error")
 	}
 }
-
-// --NEW--
 func TestKeepColumns(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
@@ -332,6 +330,28 @@ func TestKeepColumns(t *testing.T) {
 
 	if df.Headers["First Name"] != 0 || df.Headers["Last Name"] != 1 || df.Headers["Weight"] != 2 || len(df.Headers) > 3 {
 		t.Error("Keep Columns failed")
+	}
+}
+
+func TestRemoveColumnsMultiple(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	df = df.RemoveColumns("ID", "Cost", "First Name")
+
+	if df.Headers["Date"] != 0 || df.Headers["Weight"] != 1 || df.Headers["Last Name"] != 2 || len(df.Headers) > 3 {
+		t.Error("Remove Multiple Columns failed")
+	}
+}
+
+func TestRemoveColumnsSingle(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	df = df.RemoveColumns("First Name")
+
+	if df.Headers["ID"] != 0 || df.Headers["Date"] != 1 || df.Headers["Cost"] != 2 || df.Headers["Weight"] != 3 || df.Headers["Last Name"] != 4 || len(df.Headers) > 5 {
+		t.Error("Remove Single Column failed")
 	}
 }
 
@@ -593,7 +613,6 @@ func TestConcatFramesColumnCount(t *testing.T) {
 	if err == nil {
 		t.Error("Concat Frames Did Not Fail --> ", err)
 	}
-	dfOne.SaveDataFrame(path, "test")
 }
 
 func TestConcatFramesColumnOrder(t *testing.T) {

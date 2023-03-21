@@ -105,6 +105,12 @@ dfFil := df.Exclude("Last Name", "McCarlson", "Benison", "Stephenson")
 columns := [2]string{"First Name", "Last Name"}
 dfFil := df.KeepColumns(columns[:])
 
+// Remove multiple columns
+dfFil := df.RemoveColumns("ID", "Cost", "First Name")
+
+// Remove a single column
+dfFil := df.RemoveColumns("First Name")
+
 // Filter before, after, or between specified dates
 dfFil := df.FilteredAfter("Date", "2022-12-31")
 dfFil := df.FilteredBefore("Date", "2022-12-31")

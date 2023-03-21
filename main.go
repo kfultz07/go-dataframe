@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -585,6 +586,41 @@ func (frame *DataFrame) Min(fieldName string) float64 {
 		}
 	}
 	return min
+}
+
+func standardDeviation(num []float64) float64 {
+	l := float64(len(num))
+	sum := 0.0
+	var sd float64
+
+	for _, n := range num {
+		sum += n
+	}
+
+	mean := sum / l
+
+	for j := 0; j < int(l); j++ {
+		// The use of Pow math function func Pow(x, y float64) float64
+		sd += math.Pow(num[j]-mean, 2)
+	}
+	// The use of Sqrt math function func Sqrt(x float64) float64
+	sd = math.Sqrt(sd / l)
+
+	return sd
+}
+
+// Return the standard deviation of a numerical field.
+func (frame *DataFrame) StandardDeviation(fieldName string) (float64, error) {
+	var nums []float64
+
+	for _, row := range frame.FrameRecords {
+		num, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
+		if err != nil {
+			return 0.0, errors.New("Could not convert string to number in specified column to calculate standard deviation.")
+		}
+		nums = append(nums, num)
+	}
+	return standardDeviation(nums), nil
 }
 
 func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {

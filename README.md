@@ -182,6 +182,12 @@ average := df.Average("Weight")
 minimum := df.Min("Cost")
 maximum := df.Max("Cost")
 
+// Calculate the standard deviation of a numerical column.
+stdev, err := df.StandardDeviation("Cost")
+if err != nil {
+    panic(err)
+}
+
 // Returns a slice of all unique values in a specified column
 lastNames := df.Unique("Last Name")
 

@@ -130,6 +130,60 @@ func TestMin(t *testing.T) {
 	}
 }
 
+func TestStandardDeviationFunction(t *testing.T) {
+	nums := []float64{4.27, 23.45, 34.43, 54.76, 65.90, 234.45}
+	stdev := standardDeviation(nums)
+	expected := 76.42444976721926
+	variance := stdev - expected
+
+	if stdev != expected {
+		t.Error(fmt.Printf("Standard Deviation calculation error: Expected: %f Result: %f Variance: %f\n", expected, stdev, variance))
+	}
+}
+
+func TestStandardDeviationMethodPass(t *testing.T) {
+	// Create DataFrame
+	columns := []string{"ID", "Value"}
+	df := CreateNewDataFrame(columns)
+
+	for i := 0; i < 1000; i++ {
+		val := strconv.Itoa(i)
+		df = df.AddRecord([]string{"ID-" + val, val})
+	}
+
+	stdev, err := df.StandardDeviation("Value")
+	if err != nil {
+		t.Error("Test should have passed without any string to float conversion errors.")
+	}
+
+	expected := 288.6749902572095
+	variance := stdev - expected
+
+	if stdev != expected {
+		t.Error(fmt.Printf("Standard Deviation calculation error: Expected: %f Result: %f Variance: %f\n", expected, stdev, variance))
+	}
+}
+
+func TestStandardDeviationMethodFail(t *testing.T) {
+	// Create DataFrame
+	columns := []string{"ID", "Value"}
+	df := CreateNewDataFrame(columns)
+
+	for i := 0; i < 1000; i++ {
+		// Insert row with value that cannot be converted to float64.
+		if i == 500 {
+			df = df.AddRecord([]string{"ID-" + "500", "5x0x0x"})
+		}
+		val := strconv.Itoa(i)
+		df = df.AddRecord([]string{"ID-" + val, val})
+	}
+
+	_, err := df.StandardDeviation("Value")
+	if err == nil {
+		t.Error("Test should have failed.")
+	}
+}
+
 func TestFilteredCount(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")

@@ -167,26 +167,10 @@ df.Merge(&dfRight, "ID")
 df.Merge(&dfRight, "ID", "City", "State")
 ```
 
-# Various Metrics & Tools
+# Various Tools
 ```go
 // Total rows
 total := df.CountRecords()
-
-// Sum a numerical column
-sum := df.Sum("Cost")
-
-// Average a numerical column
-average := df.Average("Weight")
-
-// Min or Max of a numerical column
-minimum := df.Min("Cost")
-maximum := df.Max("Cost")
-
-// Calculate the standard deviation of a numerical column.
-stdev, err := df.StandardDeviation("Cost")
-if err != nil {
-    panic(err)
-}
 
 // Returns a slice of all unique values in a specified column
 lastNames := df.Unique("Last Name")
@@ -200,4 +184,23 @@ foundColumns := df.Columns()
 // Generates a decoupled copy of an existing DataFrame.
 // Changes made in one DataFrame will not be reflected in the other.
 df2 := df.Copy()
+```
+
+# Mathematics
+```go
+// Sum a numerical column
+sum := df.Sum("Cost")
+
+// Average a numerical column
+average := df.Average("Weight")
+
+// Min or Max of a numerical column
+minimum := df.Min("Cost")
+maximum := df.Max("Cost")
+
+// Calculate the standard deviation of a numerical column
+stdev, err := df.StandardDeviation("Cost")
+if err != nil {
+    panic(err)
+}
 ```

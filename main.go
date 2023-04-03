@@ -534,6 +534,26 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 		}
 	}
 
+	// Ensure the specified primary key is cound in both frames.
+	var lStatus bool
+	var rStatus bool
+
+	for _, col := range leftFrameColumns {
+		if col == primaryKey {
+			lStatus = true
+		}
+	}
+
+	for _, col := range rightFrameColumns {
+		if col == primaryKey {
+			rStatus = true
+		}
+	}
+
+	if !lStatus || !rStatus {
+		panic("The specified primary key was not found in both DataFrames.")
+	}
+
 	// Find position of primary key column in right frame.
 	var rightFramePrimaryKeyPosition int
 	for i, col := range rightFrameColumns {

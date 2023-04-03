@@ -165,6 +165,10 @@ df.Merge(&dfRight, "ID")
 // Merge only specified columns from right DataFrame into left DataFrame.
 // User provides columns immediately after the lookup column.
 df.Merge(&dfRight, "ID", "City", "State")
+
+// Inner merge all columns on a specified primary key.
+// Results will only include records where the primary key is found in both DataFrames.
+df = df.InnerMerge(&dfRight, "ID")
 ```
 
 # Various Tools

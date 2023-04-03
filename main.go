@@ -511,6 +511,108 @@ func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...s
 	}
 }
 
+// Performs an inner merge where all columns are consolidated between the two frames but only for records
+// where the specified primary key is found in both frames.
+func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFrame {
+	var rightFrameColumns []string
+
+	for i := 0; i < len(dfRight.Headers); i++ {
+		for k, v := range dfRight.Headers {
+			if v == i {
+				rightFrameColumns = append(rightFrameColumns, k)
+			}
+		}
+	}
+
+	var leftFrameColumns []string
+
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				leftFrameColumns = append(leftFrameColumns, k)
+			}
+		}
+	}
+
+	// Find position of primary key column in right frame.
+	var rightFramePrimaryKeyPosition int
+	for i, col := range rightFrameColumns {
+		if col == primaryKey {
+			rightFramePrimaryKeyPosition = i
+		}
+	}
+
+	// Check that no columns are duplicated between the two frames (other than primaryKey).
+	for _, col := range rightFrameColumns {
+		for k, _ := range frame.Headers {
+			if col == k && col != primaryKey {
+				panic("The following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
+			}
+		}
+	}
+
+	// Load map indicating the location of each lookup value in left frame.
+	lLookup := make(map[string]int)
+	for i, row := range frame.FrameRecords {
+		lLookup[row.Val(primaryKey, frame.Headers)] = i
+	}
+
+	// Load map indicating the location of each lookup value in right frame.
+	rLookup := make(map[string]int)
+	for i, row := range dfRight.FrameRecords {
+		rLookup[row.Val(primaryKey, dfRight.Headers)] = i
+	}
+
+	// New DataFrame to house records found in both frames.
+	dfNew := CreateNewDataFrame(leftFrameColumns)
+
+	// Add right frame columns to new DataFrame.
+	for i, col := range rightFrameColumns {
+		// Skip over primary key column in right frame as it was already
+		// included in the left frame.
+		if i != rightFramePrimaryKeyPosition {
+			dfNew.NewField(col)
+		}
+	}
+
+	var approvedPrimaryKeys []string
+
+	// Create slice of specified ID's found in both frames.
+	for _, lRow := range frame.FrameRecords {
+		currentKey := lRow.Val(primaryKey, frame.Headers)
+
+		for _, rRow := range dfRight.FrameRecords {
+			currentRightFrameKey := rRow.Val(primaryKey, dfRight.Headers)
+			// Add primary key to approved list if found in right frame.
+			if currentRightFrameKey == currentKey {
+				approvedPrimaryKeys = append(approvedPrimaryKeys, currentKey)
+			}
+		}
+	}
+
+	// Add approved records to new DataFrame.
+	for _, currentKey := range approvedPrimaryKeys {
+		// Pull data from frames.
+		lData := frame.FrameRecords[lLookup[currentKey]].Data
+		rData := dfRight.FrameRecords[rLookup[currentKey]].Data
+
+		// Add data to variable.
+		var data []string
+		data = append(data, lData...)
+
+		// Add all right frame data while skipping over the primary key column.
+		// The primary key column is skipped as it has already been added from the left frame.
+		for i, d := range rData {
+			if i != rightFramePrimaryKeyPosition {
+				data = append(data, d)
+			}
+		}
+
+		dfNew = dfNew.AddRecord(data)
+	}
+	return dfNew
+}
+
 func (frame *DataFrame) CountRecords() int {
 	return len(frame.FrameRecords)
 }

@@ -534,7 +534,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 		}
 	}
 
-	// Ensure the specified primary key is cound in both frames.
+	// Ensure the specified primary key is found in both frames.
 	var lStatus bool
 	var rStatus bool
 
@@ -588,8 +588,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 
 	// Add right frame columns to new DataFrame.
 	for i, col := range rightFrameColumns {
-		// Skip over primary key column in right frame as it was already
-		// included in the left frame.
+		// Skip over primary key column in right frame as it was already included in the left frame.
 		if i != rightFramePrimaryKeyPosition {
 			dfNew.NewField(col)
 		}
@@ -600,6 +599,11 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 	// Create slice of specified ID's found in both frames.
 	for _, lRow := range frame.FrameRecords {
 		currentKey := lRow.Val(primaryKey, frame.Headers)
+
+		// Skip blank values as they are not allowed.
+		if len(currentKey) == 0 || strings.ToLower(currentKey) == "nan" || strings.ToLower(currentKey) == "null" {
+			continue
+		}
 
 		for _, rRow := range dfRight.FrameRecords {
 			currentRightFrameKey := rRow.Val(primaryKey, dfRight.Headers)

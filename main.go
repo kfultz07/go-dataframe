@@ -571,16 +571,16 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 		}
 	}
 
-	// Load map indicating the location of each lookup value in left frame.
-	lLookup := make(map[string]int)
-	for i, row := range frame.FrameRecords {
-		lLookup[row.Val(primaryKey, frame.Headers)] = i
-	}
-
 	// Load map indicating the location of each lookup value in right frame.
 	rLookup := make(map[string]int)
 	for i, row := range dfRight.FrameRecords {
-		rLookup[row.Val(primaryKey, dfRight.Headers)] = i
+		// Only add if key hasn't already been added. This ensures the first record found in the right
+		// frame is what is used instead of the last if duplicates are found.
+		currentKey := row.Val(primaryKey, dfRight.Headers)
+		_, ok := rLookup[currentKey]
+		if !ok {
+			rLookup[currentKey] = i
+		}
 	}
 
 	// New DataFrame to house records found in both frames.
@@ -615,24 +615,26 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 	}
 
 	// Add approved records to new DataFrame.
-	for _, currentKey := range approvedPrimaryKeys {
-		// Pull data from frames.
-		lData := frame.FrameRecords[lLookup[currentKey]].Data
-		rData := dfRight.FrameRecords[rLookup[currentKey]].Data
+	for i, row := range frame.FrameRecords {
+		currentKey := row.Val(primaryKey, frame.Headers)
+		if contains(approvedPrimaryKeys, currentKey) {
+			lData := frame.FrameRecords[i].Data
+			rData := dfRight.FrameRecords[rLookup[currentKey]].Data
 
-		// Add data to variable.
-		var data []string
-		data = append(data, lData...)
+			// Add left frame data to variable.
+			var data []string
+			data = append(data, lData...)
 
-		// Add all right frame data while skipping over the primary key column.
-		// The primary key column is skipped as it has already been added from the left frame.
-		for i, d := range rData {
-			if i != rightFramePrimaryKeyPosition {
-				data = append(data, d)
+			// Add all right frame data while skipping over the primary key column.
+			// The primary key column is skipped as it has already been added from the left frame.
+			for i, d := range rData {
+				if i != rightFramePrimaryKeyPosition {
+					data = append(data, d)
+				}
 			}
-		}
 
-		dfNew = dfNew.AddRecord(data)
+			dfNew = dfNew.AddRecord(data)
+		}
 	}
 	return dfNew
 }

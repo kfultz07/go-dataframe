@@ -625,6 +625,45 @@ func TestInnerMerge(t *testing.T) {
 	}
 }
 
+func TestInnerMergeLeftFrameDuplicates(t *testing.T) {
+	path := "./"
+
+	// Prep left frame
+	df := CreateDataFrame(path, "TestDataInnerDuplicate.csv")
+
+	// Prep right frame
+	dfRight := CreateDataFrame(path, "TestInnerMergeData.csv")
+
+	// Merge
+	df = df.InnerMerge(&dfRight, "ID")
+
+	if df.CountRecords() != 6 {
+		t.Error("Inner Merge: record count error.")
+	}
+
+	columns := []string{"ID", "Date", "Cost", "Weight", "First Name", "Last Name", "City", "State", "Postal Code"}
+
+	data := make([][]string, 6)
+	data[0] = []string{"4", "2022-01-04", "121", "196", "Peter", "Wiedmann", "VAN BUREN", "AR", "72956"}
+	data[1] = []string{"5", "2022-01-05", "774", "415", "Andy", "Wiedmann", "TAUNTON", "MA", "2780"}
+	data[2] = []string{"7", "2022-01-07", "995", "500", "Bryan", "Curtis", "GOLDSBORO", "NC", "27530"}
+	data[3] = []string{"9", "2022-01-09", "939", "157", "Eric", "Petruska", "PHOENIX", "AZ", "85024"}
+	data[4] = []string{"9", "2022-01-09", "12345", "6789", "Eric", "Petruska", "PHOENIX", "AZ", "85024"}
+	data[5] = []string{"10", "2022-01-10", "597", "475", "Carl", "Carlson", "JEFFERSON CITY", "MO", "65109"}
+
+	for i, row := range df.FrameRecords {
+		if len(row.Data) != len(data[i]) {
+			t.Error("Inner Merge: Column count does not match.")
+		}
+		for i2, col := range columns {
+			val := row.Val(col, df.Headers)
+			if val != data[i][i2] {
+				t.Error("Inner Merge: Data results to not match what is expected.")
+			}
+		}
+	}
+}
+
 func TestConcatFrames(t *testing.T) {
 	path := "./"
 	dfOne := CreateDataFrame(path, "TestData.csv")

@@ -115,6 +115,17 @@ dfFil := df.RemoveColumns("First Name")
 dfFil := df.FilteredAfter("Date", "2022-12-31")
 dfFil := df.FilteredBefore("Date", "2022-12-31")
 dfFil := df.FilteredBetween("Date", "2022-01-01", "2022-12-31")
+
+// Filter a numerical column based on a provided value.
+df, err := df.GreaterThanOrEqualTo("Cost", float64(value))
+if err != nil {
+    panic(err)
+}
+
+df, err := df.LessThanOrEqualTo("Weight", float64(value))
+if err != nil {
+    panic(err)
+}
 ```
 
 # Add record to DataFrame and later update

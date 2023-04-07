@@ -272,6 +272,64 @@ func (frame DataFrame) Filtered(fieldName string, value ...string) DataFrame {
 	return newFrame
 }
 
+// Generated a new filtered DataFrame that in which a numerical column is either greater than or equal to
+// a provided numerical value.
+func (frame DataFrame) GreaterThanOrEqualTo(fieldName string, value float64) (DataFrame, error) {
+	headers := []string{}
+
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
+			}
+		}
+	}
+	newFrame := CreateNewDataFrame(headers)
+
+	for i, row := range frame.FrameRecords {
+		valString := row.Val(fieldName, frame.Headers)
+
+		val, err := strconv.ParseFloat(valString, 64)
+		if err != nil {
+			return CreateNewDataFrame([]string{}), err
+		}
+
+		if val >= value {
+			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+		}
+	}
+	return newFrame, nil
+}
+
+// Generated a new filtered DataFrame that in which a numerical column is either less than or equal to
+// a provided numerical value.
+func (frame DataFrame) LessThanOrEqualTo(fieldName string, value float64) (DataFrame, error) {
+	headers := []string{}
+
+	for i := 0; i < len(frame.Headers); i++ {
+		for k, v := range frame.Headers {
+			if v == i {
+				headers = append(headers, k)
+			}
+		}
+	}
+	newFrame := CreateNewDataFrame(headers)
+
+	for i, row := range frame.FrameRecords {
+		valString := row.Val(fieldName, frame.Headers)
+
+		val, err := strconv.ParseFloat(valString, 64)
+		if err != nil {
+			return CreateNewDataFrame([]string{}), err
+		}
+
+		if val <= value {
+			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
+		}
+	}
+	return newFrame, nil
+}
+
 // Generates a new DataFrame that excludes specified instances.
 // New DataFrame will be kept in same order as original.
 func (frame DataFrame) Exclude(fieldName string, value ...string) DataFrame {

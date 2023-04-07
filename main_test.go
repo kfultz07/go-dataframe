@@ -206,6 +206,52 @@ func TestFilteredCheck(t *testing.T) {
 	}
 }
 
+func TestGreaterThanOrEqualTo(t *testing.T) {
+	path := "./"
+	value := float64(597)
+	df := CreateDataFrame(path, "TestData.csv")
+	df, err := df.GreaterThanOrEqualTo("Cost", value)
+	if err != nil {
+		t.Error("Greater Than Or Equal To: This should not have failed...")
+	}
+
+	if df.CountRecords() != 7 {
+		t.Error("Greater Than Or Equal To: Record count is not correct.")
+	}
+
+	ids := []string{"1", "2", "5", "6", "7", "9", "10"}
+	foundIds := df.Unique("ID")
+
+	for i, id := range foundIds {
+		if id != ids[i] {
+			t.Error("Greater Than Or Equal To: Records do not match.")
+		}
+	}
+}
+
+func TestLessThanOrEqualTo(t *testing.T) {
+	path := "./"
+	value := float64(436)
+	df := CreateDataFrame(path, "TestData.csv")
+	df, err := df.LessThanOrEqualTo("Weight", value)
+	if err != nil {
+		t.Error("Less Than Or Equal To: This should not have failed...")
+	}
+
+	if df.CountRecords() != 7 {
+		t.Error("Less Than Or Equal To: Record count is not correct.")
+	}
+
+	ids := []string{"1", "2", "4", "5", "6", "8", "9"}
+	foundIds := df.Unique("ID")
+
+	for i, id := range foundIds {
+		if id != ids[i] {
+			t.Error("Less Than Or Equal To: Records do not match.")
+		}
+	}
+}
+
 func TestExcludeCount(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")

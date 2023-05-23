@@ -14,6 +14,7 @@ import (
 )
 
 type Record struct {
+	DataFrame
 	Data []string
 }
 
@@ -87,7 +88,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 			log.Fatalf("Error in record loop: %v", err)
 		}
 		// Create new Record
-		x := Record{[]string{}}
+		x := Record{Data: []string{}}
 
 		// Loop over records and add to Data field of Record struct
 		for _, r := range record {
@@ -203,7 +204,7 @@ func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
 
 // Add a new record to the DataFrame
 func (frame DataFrame) AddRecord(newData []string) DataFrame {
-	x := Record{[]string{}}
+	x := Record{Data: []string{}}
 
 	for _, each := range newData {
 		x.Data = append(x.Data, each)
@@ -851,11 +852,17 @@ func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
 
 // Return the value of the specified field
 func (x Record) Val(fieldName string, headers map[string]int) string {
+	if _, ok := headers[fieldName]; !ok {
+		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
+	}
 	return x.Data[headers[fieldName]]
 }
 
 // Update the value in a specified field
 func (x Record) Update(fieldName, value string, headers map[string]int) {
+	if _, ok := headers[fieldName]; !ok {
+		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
+	}
 	x.Data[headers[fieldName]] = value
 }
 

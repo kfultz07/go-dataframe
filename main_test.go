@@ -40,17 +40,16 @@ func TestDynamicMetrics(t *testing.T) {
 		}
 	}
 
-	dataFrameValue := math.Round(df.Sum("Value")*100) / 100
+	dataFrameValue := df.Sum("Value")
 	dataFrameAvgValue := math.Round(df.Average("Value")*100) / 100
 	dataFrameMaxValue := math.Round(df.Max("Value")*100) / 100
 	dataFrameMinValue := math.Round(df.Min("Value")*100) / 100
-	sum = math.Round(sum*100) / 100
 	avg := math.Round(sum/float64(totalRecords)*100) / 100
 	recordedMax = math.Round(recordedMax*100) / 100
 	recordedMin = math.Round(recordedMin*100) / 100
 
-	if dataFrameValue != sum {
-		t.Error("Dynamic Metrics: sum float failed", dataFrameValue, sum)
+	if math.Abs(dataFrameValue-sum) > 0.001 {
+		t.Error("Dynamic Metrics: sum float failed", dataFrameValue, sum, math.Abs(dataFrameValue-sum))
 	}
 	if dataFrameAvgValue != avg {
 		t.Error("Dynamic Metrics: average float failed", dataFrameAvgValue, avg)
@@ -371,6 +370,20 @@ func TestRecordCheck(t *testing.T) {
 	}
 }
 
+func TestRecordCheckPanic(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	for _, row := range df.FrameRecords {
+		defer func() { recover() }()
+
+		row.Val("Your Name Here", df.Headers)
+
+		// Never reaches here if `OtherFunctionThatPanics` panics.
+		t.Errorf("The row.Val() method should have panicked.")
+	}
+}
+
 func TestAddRecord(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
@@ -539,6 +552,21 @@ func TestUpdate(t *testing.T) {
 			if row.Val("Weight", df.Headers) != "30" {
 				t.Error("Update row failed.")
 			}
+		}
+	}
+}
+
+func TestUpdatePanic(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	for _, row := range df.FrameRecords {
+		if row.Val("First Name", df.Headers) == "Avery" && row.Val("Last Name", df.Headers) == "Fultz" {
+			defer func() { recover() }()
+
+			row.Update("Your Name Here", "30", df.Headers)
+
+			t.Errorf("Method should have panicked.")
 		}
 	}
 }

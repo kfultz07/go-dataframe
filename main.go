@@ -109,9 +109,8 @@ func worker(jobs <-chan string, results chan<- DataFrame, resultsNames chan<- st
 }
 
 // Concurrently loads multiple csv files into DataFrames within the same directory.
-// Returns a map with the filename as the key. This is for variable assignment purposes
-// as concurrent programs are not guaranteed to return results in the same order.
-func LoadFrames(filePath string, files []string) (map[string]DataFrame, error) {
+// Returns a slice with the DataFrames in the same order as provided in the files parameter.
+func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 	numJobs := len(files)
 
 	if numJobs <= 1 {
@@ -140,7 +139,16 @@ func LoadFrames(filePath string, files []string) (map[string]DataFrame, error) {
 	for i := 1; i <= numJobs; i++ {
 		jobResults[<-resultsNames] = <-results
 	}
-	return jobResults, nil
+
+	var orderedResults []DataFrame
+	for _, f := range files {
+		val, ok := jobResults[f]
+		if !ok {
+			return []DataFrame{}, errors.New("An error occurred while looking up returned DataFrame in the LoadFrames function.")
+		}
+		orderedResults = append(orderedResults, val)
+	}
+	return orderedResults, nil
 }
 
 // User specifies columns they want to keep from a preexisting DataFrame

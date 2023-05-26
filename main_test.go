@@ -1059,26 +1059,11 @@ func TestLoadFrames(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	var dfTd DataFrame
-	var dfComma DataFrame
-	var dfConcat DataFrame
-	var dfDate DataFrame
-	var dfMerge DataFrame
-
-	for k, v := range results {
-		switch k {
-		case files[0]:
-			dfTd = v
-		case files[1]:
-			dfComma = v
-		case files[2]:
-			dfConcat = v
-		case files[3]:
-			dfDate = v
-		case files[4]:
-			dfMerge = v
-		}
-	}
+	dfTd := results[0]
+	dfComma := results[1]
+	dfConcat := results[2]
+	dfDate := results[3]
+	dfMerge := results[4]
 
 	if dfTd.CountRecords() != 10 || dfTd.Sum("Weight") != 3376.0 || len(dfTd.Columns()) != 6 {
 		t.Error("LoadFrames: TestData.csv is not correct")
@@ -1096,7 +1081,7 @@ func TestLoadFrames(t *testing.T) {
 		t.Error("LoadFrames: TestMergeData.csv is not correct")
 	}
 
-	dfFilterTest := results["TestData.csv"].Filtered("Last Name", "Fultz")
+	dfFilterTest := dfTd.Filtered("Last Name", "Fultz")
 	if dfTd.CountRecords() == dfFilterTest.CountRecords() {
 		t.Error("LoadFrame: variable referencing map value")
 	}

@@ -39,7 +39,8 @@ df.SaveDataFrame(path, "NewFileName")
 ```
 
 # Concurrently load multiple CSV files into DataFrames
-Tests performed utilized four files with a total of 5,746,452 records and a varing number of columns. Results indicated an average total load time of 8.81 seconds when loaded sequentially and 4.06 seconds when loaded concurrently utilizing the LoadFrames function. An overall 54% speed improvement. Files must all be in the same directory. Results returned from the LoadFrames function in a map[string]DataFrame as concurrent programs are not guaranteed to return results in the same order.
+Tests performed utilized four files with a total of 5,746,452 records and a varing number of columns. Results indicated an average total load time of 8.81 seconds when loaded sequentially and 4.06 seconds when loaded concurrently utilizing the LoadFrames function. An overall 54% speed improvement. Files must all be in the same directory. Results are returned in a
+slice in the same order as provided in the files parameter.
 ```go
 filePath := "/Users/Name/Desktop/"
 files := []string{
@@ -55,26 +56,11 @@ if err != nil {
     log.Fatal(err)
 }
 
-var dfOne DataFrame
-var dfTwo DataFrame
-var dfThree DataFrame
-var dfFour DataFrame
-var dfFive DataFrame
-
-for k, v := range results {
-    switch k {
-    case files[0]:
-        dfOne = v
-    case files[1]:
-        dfTwo = v
-    case files[2]:
-        dfThree = v
-    case files[3]:
-        dfFour = v
-    case files[4]:
-        dfFive = v
-    }
-}
+dfOne := results[0]
+dfTwo := results[1]
+dfThree := results[2]
+dfFour := results[3]
+dfFive := results[4]
 ```
 
 # AWS S3 Cloud Storage

@@ -14,7 +14,6 @@ import (
 )
 
 type Record struct {
-	DataFrame
 	Data []string
 }
 

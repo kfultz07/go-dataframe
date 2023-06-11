@@ -22,7 +22,7 @@ type DataFrame struct {
 	Headers      map[string]int
 }
 
-// Generate a new empty DataFrame
+// Generate a new empty DataFrame.
 func CreateNewDataFrame(headers []string) DataFrame {
 	myRecords := []Record{}
 	theHeaders := make(map[string]int)
@@ -37,7 +37,7 @@ func CreateNewDataFrame(headers []string) DataFrame {
 	return newFrame
 }
 
-// Generate a new DataFrame sourced from a csv file
+// Generate a new DataFrame sourced from a csv file.
 func CreateDataFrame(path, fileName string) DataFrame {
 	// Check user entries
 	if path[len(path)-1:] != "/" {

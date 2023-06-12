@@ -22,6 +22,37 @@ type DataFrame struct {
 	Headers      map[string]int
 }
 
+type StreamingRecord struct {
+	Data    []string
+	Headers map[string]int
+}
+
+// Return the value of the specified field.
+func (x StreamingRecord) Val(fieldName string) string {
+	if _, ok := x.Headers[fieldName]; !ok {
+		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
+	}
+	return x.Data[x.Headers[fieldName]]
+}
+
+// Converts the value from a string to float64
+func (x StreamingRecord) ConvertToFloat(fieldName string) float64 {
+	value, err := strconv.ParseFloat(x.Val(fieldName), 64)
+	if err != nil {
+		log.Fatalf("Could Not Convert to float64: %v", err)
+	}
+	return value
+}
+
+// Converts the value from a string to int64
+func (x StreamingRecord) ConvertToInt(fieldName string) int64 {
+	value, err := strconv.ParseInt(x.Val(fieldName), 0, 64)
+	if err != nil {
+		log.Fatalf("Could Not Convert to int64: %v", err)
+	}
+	return value
+}
+
 // Generate a new empty DataFrame.
 func CreateNewDataFrame(headers []string) DataFrame {
 	myRecords := []Record{}
@@ -97,6 +128,66 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	}
 	newFrame := DataFrame{FrameRecords: s, Headers: headers}
 	return newFrame
+}
+
+// Stream rows of data from a csv file to be processed. Streaming data is preferred when dealing with large files
+// and memory usage needs to be considered. Results are streamed via a channel with a StreamingRecord type.
+func Stream(path, fileName string, c chan StreamingRecord) {
+	defer close(c)
+	// Check user entries
+	if path[len(path)-1:] != "/" {
+		path = path + "/"
+	}
+	if strings.Contains(fileName, ".csv") != true {
+		fileName = fileName + ".csv"
+	}
+
+	// Open the CSV file
+	recordFile, err := os.Open(path + fileName)
+	if err != nil {
+		log.Fatalf("Error opening the file. Please ensure the path and filename are correct. Message: %v", err)
+	}
+
+	// Setup the reader
+	reader := csv.NewReader(recordFile)
+
+	// Read the records
+	header, err := reader.Read()
+	if err != nil {
+		log.Fatalf("Error reading the records: %v", err)
+	}
+
+	// Remove Byte Order Marker for UTF-8 files
+	for i, each := range header {
+		byteSlice := []byte(each)
+		if byteSlice[0] == 239 && byteSlice[1] == 187 && byteSlice[2] == 191 {
+			header[i] = each[3:]
+		}
+	}
+
+	headers := make(map[string]int)
+	for i, columnName := range header {
+		headers[columnName] = i
+	}
+
+	// Loop over the records and create Record objects to be stored
+	for i := 0; ; i++ {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatalf("Error in record loop: %v", err)
+		}
+		// Create new Record
+		x := StreamingRecord{Headers: headers}
+
+		// Loop over records and add to Data field of Record struct
+		for _, r := range record {
+			x.Data = append(x.Data, r)
+		}
+		c <- x
+	}
+	return
 }
 
 func worker(jobs <-chan string, results chan<- DataFrame, resultsNames chan<- string, filePath string) {
@@ -857,7 +948,7 @@ func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
 	return true
 }
 
-// Return the value of the specified field
+// Return the value of the specified field.
 func (x Record) Val(fieldName string, headers map[string]int) string {
 	if _, ok := headers[fieldName]; !ok {
 		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
@@ -865,7 +956,7 @@ func (x Record) Val(fieldName string, headers map[string]int) string {
 	return x.Data[headers[fieldName]]
 }
 
-// Update the value in a specified field
+// Update the value in a specified field.
 func (x Record) Update(fieldName, value string, headers map[string]int) {
 	if _, ok := headers[fieldName]; !ok {
 		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
@@ -873,7 +964,7 @@ func (x Record) Update(fieldName, value string, headers map[string]int) {
 	x.Data[headers[fieldName]] = value
 }
 
-// Converts the value from a string to float64
+// Converts the value from a string to float64.
 func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64 {
 	value, err := strconv.ParseFloat(x.Val(fieldName, headers), 64)
 	if err != nil {
@@ -882,8 +973,8 @@ func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64
 	return value
 }
 
+// Converts the value from a string to int64.
 func (x Record) ConvertToInt(fieldName string, headers map[string]int) int64 {
-	// Converts the value from a string to int64
 	value, err := strconv.ParseInt(x.Val(fieldName, headers), 0, 64)
 	if err != nil {
 		log.Fatalf("Could Not Convert to int64: %v", err)

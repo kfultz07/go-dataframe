@@ -10,6 +10,60 @@ import (
 	"time"
 )
 
+func TestStream(t *testing.T) {
+	firstNameAnswers := []string{"Kevin", "Beth", "Avery", "Peter", "Andy", "Nick", "Bryan", "Brian", "Eric", "Carl"}
+	costAnswers := []string{"818", "777", "493", "121", "774", "874", "995", "133", "939", "597"}
+
+	path := "./"
+	c := make(chan StreamingRecord)
+	go Stream(path, "TestData.csv", c)
+
+	i := 0
+	for row := range c {
+		if row.Val("First Name") != firstNameAnswers[i] {
+			t.Error("First name did not match.")
+		}
+		if row.Val("Cost") != costAnswers[i] {
+			t.Error("Cost did not match.")
+		}
+		i++
+	}
+}
+
+func TestStreamConvertToInt(t *testing.T) {
+	costAnswers := []int64{818, 777, 493, 121, 774, 874, 995, 133, 939, 597}
+
+	path := "./"
+	c := make(chan StreamingRecord)
+	go Stream(path, "TestData.csv", c)
+
+	i := 0
+	for row := range c {
+		val := row.ConvertToInt("Cost")
+		if val != costAnswers[i] {
+			t.Error("Could not convert to int64.")
+		}
+		i++
+	}
+}
+
+func TestStreamConvertToFloat(t *testing.T) {
+	costAnswers := []float64{818.0, 777.0, 493.0, 121.0, 774.0, 874.0, 995.0, 133.0, 939.0, 597.0}
+
+	path := "./"
+	c := make(chan StreamingRecord)
+	go Stream(path, "TestData.csv", c)
+
+	i := 0
+	for row := range c {
+		val := row.ConvertToFloat("Cost")
+		if val != costAnswers[i] {
+			t.Error("Could not convert to float64.")
+		}
+		i++
+	}
+}
+
 func TestDynamicMetrics(t *testing.T) {
 	// Create DataFrame
 	columns := []string{"Value"}

@@ -63,6 +63,20 @@ dfFour := results[3]
 dfFive := results[4]
 ```
 
+# Stream CSV data
+Stream rows of data from a csv file to be processed. Streaming data is preferred when dealing with large files and memory usage needs to be considered. Results are streamed via a channel with a StreamingRecord type.
+```go
+filePath := "/Users/Name/Desktop/"
+c := make(chan StreamingRecord)
+go Stream(filePath, "TestData.csv", c)
+
+for row := range c {
+    firstName := row.Val("First Name")
+    cost := row.ConvertToFloat("Cost") // Converts value to float64
+    weight := row.ConvertToInt("Weight") // Converts value to int64
+}
+```
+
 # AWS S3 Cloud Storage
 ```go
 // Download a DataFrame from an S3 bucket

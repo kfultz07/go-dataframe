@@ -64,16 +64,35 @@ dfFive := results[4]
 ```
 
 # Stream CSV data
-Stream rows of data from a csv file to be processed. Streaming data is preferred when dealing with large files and memory usage needs to be considered. Results are streamed via a channel with a StreamingRecord type.
+Stream rows of data from a csv file to be processed. Streaming data is preferred when dealing with large files and memory usage needs to be considered. Results are streamed via a channel with a StreamingRecord type. A struct with only desired fields could be created and either operated on sequentially or stored in a slice for later use.
 ```go
+type Product struct {
+    name string
+    cost float64
+    weight float64
+}
+
+func (p Product) CostPerLb() float64 {
+    if p.weight == 0.0 {
+        return 0.0
+    }
+    return p.cost / p.weight
+}
+
 filePath := "/Users/Name/Desktop/"
+
+var products []Product
+
 c := make(chan StreamingRecord)
 go Stream(filePath, "TestData.csv", c)
 
 for row := range c {
-    firstName := row.Val("First Name")
-    cost := row.ConvertToFloat("Cost") // Converts value to float64
-    weight := row.ConvertToInt("Weight") // Converts value to int64
+    prod := Product{
+        name: row.Val("Name"),
+        cost: row.ConvertToFloat("Cost"),
+        weight: row.ConvertToInt("Weight"),
+    }
+    products = append(products, prod)
 }
 ```
 

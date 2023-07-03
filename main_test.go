@@ -259,6 +259,42 @@ func TestFilteredCheck(t *testing.T) {
 	}
 }
 
+// Ensures changes made in the original dataframe are not also made in a filtered dataframe.
+func TestFilteredChangeToOriginal(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+	dfFil := df.Filtered("Last Name", "Fultz", "Wiedmann")
+
+	for _, row := range df.FrameRecords {
+		if row.Val("ID", df.Headers) == "2" {
+			row.Update("Last Name", "Bethany", df.Headers)
+		}
+		if row.Val("ID", df.Headers) == "5" {
+			row.Update("Last Name", "Andyanne", df.Headers)
+		}
+	}
+
+	// Ensure row was actually updated in the original frame.
+	for _, row := range df.FrameRecords {
+		if row.Val("ID", df.Headers) == "2" && row.Val("Last Name", df.Headers) != "Bethany" {
+			t.Error("Row 2 last name not changed in original frame.")
+		}
+		if row.Val("ID", df.Headers) == "5" && row.Val("Last Name", df.Headers) != "Andyanne" {
+			t.Error("Row 5 last name not changed in original frame.")
+		}
+	}
+
+	// Check rows in filtered dataframe were not also updated.
+	for _, row := range dfFil.FrameRecords {
+		if row.Val("ID", df.Headers) == "2" && row.Val("Last Name", df.Headers) != "Fultz" {
+			t.Error("Row 2 in filtered dataframe was incorrectly updated with original.")
+		}
+		if row.Val("ID", df.Headers) == "5" && row.Val("Last Name", df.Headers) != "Wiedmann" {
+			t.Error("Row 5 in filtered dataframe was incorrectly updated with original.")
+		}
+	}
+}
+
 func TestGreaterThanOrEqualTo(t *testing.T) {
 	path := "./"
 	value := float64(597)

@@ -70,6 +70,9 @@ func CreateNewDataFrame(headers []string) DataFrame {
 
 // Generate a new DataFrame sourced from a csv file.
 func CreateDataFrame(path, fileName string) DataFrame {
+	quit := make(chan bool)
+	go loading(quit)
+
 	// Check user entries
 	if path[len(path)-1:] != "/" {
 		path = path + "/"
@@ -81,6 +84,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Open the CSV file
 	recordFile, err := os.Open(path + fileName)
 	if err != nil {
+		quit <- true
 		log.Fatalf("Error opening the file. Please ensure the path and filename are correct. Message: %v", err)
 	}
 
@@ -90,6 +94,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Read the records
 	header, err := reader.Read()
 	if err != nil {
+		quit <- true
 		log.Fatalf("Error reading the records: %v", err)
 	}
 
@@ -115,6 +120,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		if err == io.EOF {
 			break
 		} else if err != nil {
+			quit <- true
 			log.Fatalf("Error in record loop: %v", err)
 		}
 		// Create new Record
@@ -127,6 +133,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		s = append(s, x)
 	}
 	newFrame := DataFrame{FrameRecords: s, Headers: headers}
+	quit <- true
 	return newFrame
 }
 
@@ -134,6 +141,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 // and memory usage needs to be considered. Results are streamed via a channel with a StreamingRecord type.
 func Stream(path, fileName string, c chan StreamingRecord) {
 	defer close(c)
+
 	// Check user entries
 	if path[len(path)-1:] != "/" {
 		path = path + "/"

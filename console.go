@@ -3,6 +3,7 @@ package dataframe
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 func calculateSpaces(val string, maxColumnWidth int) string {
@@ -75,4 +76,33 @@ func (frame DataFrame) ViewColumns() {
 
 	head := generateTableColumns(columns, maxColumnWidth)
 	fmt.Println(head)
+}
+
+func loading(quit <-chan bool) {
+	char := []string{
+		"| L",
+		"/ LO",
+		"- LOA",
+		"\\ LOAD",
+		"| LOADI",
+		"/ LOADIN",
+		"- LOADING",
+		"\\ LOADING.",
+		"| LOADING..",
+		"/ LOADING...",
+		"-           ",
+	}
+
+	for {
+		select {
+		case <-quit:
+			fmt.Printf("\r")
+			return
+		default:
+			for _, c := range char {
+				fmt.Printf("\r%s", c)
+				time.Sleep(time.Millisecond * 75)
+			}
+		}
+	}
 }

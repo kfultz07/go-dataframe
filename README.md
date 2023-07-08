@@ -1,10 +1,10 @@
 # go-dataframe
 A simple package to abstract away the process of creating usable DataFrames for data analytics. This package is heavily inspired by the amazing Python library, Pandas.
 
-# Generate DataFrame
+## Generate DataFrame
 Utilize the CreateDataFrame function to create a DataFrame from an existing CSV file or create an empty DataFrame with the CreateNewDataFrame function. The user can then iterate over the DataFrame to perform the intended tasks. All data in the DataFrame is a string by default. There are various methods to provide additional functionality including: converting data types, update values, filter, concatenate, and more. Please use the below examples or explore the code to learn more.
 
-# Import Package
+## Import Package
 ```go
 import (
     "fmt"
@@ -13,7 +13,7 @@ import (
 )
 ```
 
-# Load CSV into DataFrame, create a new field, and save
+## Load CSV into DataFrame, create a new field, and save
 ```go
 path := "/Users/Name/Desktop/"
 
@@ -38,7 +38,7 @@ for _, row := range df.FrameRecords {
 df.SaveDataFrame(path, "NewFileName")
 ```
 
-# Concurrently load multiple CSV files into DataFrames
+## Concurrently load multiple CSV files into DataFrames
 Tests performed utilized four files with a total of 5,746,452 records and a varing number of columns. Results indicated an average total load time of 8.81 seconds when loaded sequentially and 4.06 seconds when loaded concurrently utilizing the LoadFrames function. An overall 54% speed improvement. Files must all be in the same directory. Results are returned in a
 slice in the same order as provided in the files parameter.
 ```go
@@ -63,7 +63,7 @@ dfFour := results[3]
 dfFive := results[4]
 ```
 
-# Stream CSV data
+## Stream CSV data
 Stream rows of data from a csv file to be processed. Streaming data is preferred when dealing with large files and memory usage needs to be considered. Results are streamed via a channel with a StreamingRecord type. A struct with only desired fields could be created and either operated on sequentially or stored in a slice for later use.
 ```go
 type Product struct {
@@ -96,7 +96,7 @@ for row := range c {
 }
 ```
 
-# AWS S3 Cloud Storage
+## AWS S3 Cloud Storage
 ```go
 // Download a DataFrame from an S3 bucket
 path := "/Users/Name/Desktop/" // File path
@@ -114,7 +114,7 @@ if err != nil {
 }
 ```
 
-# Various methods to filter DataFrames
+## Various methods to filter DataFrames
 ```go
 // Variadic methods that generate a new DataFrame
 dfFil := df.Filtered("Last Name", "McCarlson", "Benison", "Stephenson")
@@ -147,7 +147,7 @@ if err != nil {
 }
 ```
 
-# Add record to DataFrame and later update
+## Add record to DataFrame and later update
 ```go
 // Add a new record
 data := [6]string{"11", "2022-01-01", "123", "456", "Kevin", "Kevison"}
@@ -162,7 +162,7 @@ for _, row := range df.FrameRecords {
 }
 ```
 
-# Concatenate DataFrames
+## Concatenate DataFrames
 ```go
 // ConcatFrames uses a pointer to the DataFrame being appended.
 // Both DataFrames must have the same columns in the same order.
@@ -172,7 +172,7 @@ if err != nil {
 }
 ```
 
-# Rename a Column
+## Rename a Column
 ```go
 // Rename an existing column in a DataFrame
 // First parameter provides the original column name to be updated.
@@ -183,7 +183,7 @@ if err != nil {
 }
 ```
 
-# Merge two DataFrames
+## Merge two DataFrames
 ```go
 df := CreateDataFrame(path, "TestData.csv")
 dfRight := CreateDataFrame(path, "TestDataRight.csv")
@@ -201,7 +201,7 @@ df.Merge(&dfRight, "ID", "City", "State")
 df = df.InnerMerge(&dfRight, "ID")
 ```
 
-# Various Tools
+## Various Tools
 ```go
 // Total rows
 total := df.CountRecords()
@@ -220,7 +220,7 @@ foundColumns := df.Columns()
 df2 := df.Copy()
 ```
 
-# Mathematics
+## Mathematics
 ```go
 // Sum a numerical column
 sum := df.Sum("Cost")
@@ -238,3 +238,8 @@ if err != nil {
     panic(err)
 }
 ```
+
+## Authors
+
+* [Kevin Fultz](https://github.com/kfultz07)
+* [Fahad Siddiqui](https://github.com/fahadsiddiqui)

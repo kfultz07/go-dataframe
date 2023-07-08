@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -16,7 +17,7 @@ func TestStream(t *testing.T) {
 
 	path := "./"
 	c := make(chan StreamingRecord)
-	go Stream(path, "TestData.csv", c)
+	go Stream(path, "data/tests/TestData.csv", c)
 
 	i := 0
 	for row := range c {
@@ -35,7 +36,7 @@ func TestStreamConvertToInt(t *testing.T) {
 
 	path := "./"
 	c := make(chan StreamingRecord)
-	go Stream(path, "TestData.csv", c)
+	go Stream(path, "data/tests/TestData.csv", c)
 
 	i := 0
 	for row := range c {
@@ -52,7 +53,7 @@ func TestStreamConvertToFloat(t *testing.T) {
 
 	path := "./"
 	c := make(chan StreamingRecord)
-	go Stream(path, "TestData.csv", c)
+	go Stream(path, "data/tests/TestData.csv", c)
 
 	i := 0
 	for row := range c {
@@ -121,7 +122,7 @@ func TestDynamicMetrics(t *testing.T) {
 
 func TestCreateDataFrameCostFloat(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	total := 0.0
 
 	for _, row := range df.FrameRecords {
@@ -135,7 +136,7 @@ func TestCreateDataFrameCostFloat(t *testing.T) {
 
 func TestCreateDataFrameCostInt(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	var total int64
 
 	for _, row := range df.FrameRecords {
@@ -149,7 +150,7 @@ func TestCreateDataFrameCostInt(t *testing.T) {
 
 func TestSum(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	if df.Sum("Weight") != 3376.0 || df.Sum("Cost") != 6521.0 {
 		t.Error("Just sum error...")
@@ -158,7 +159,7 @@ func TestSum(t *testing.T) {
 
 func TestAverage(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	if df.Average("Weight") != 337.60 || df.Average("Cost") != 652.10 {
 		t.Error("Not your average error...")
@@ -167,7 +168,7 @@ func TestAverage(t *testing.T) {
 
 func TestMax(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	if df.Max("Weight") != 500.0 || df.Max("Cost") != 995.0 {
 		t.Error("Error to the max...")
@@ -176,7 +177,7 @@ func TestMax(t *testing.T) {
 
 func TestMin(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	if df.Min("Weight") != 157.0 || df.Min("Cost") != 121.0 {
 		t.Error("Error to the min...")
@@ -239,7 +240,7 @@ func TestStandardDeviationMethodFail(t *testing.T) {
 
 func TestFilteredCount(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	dfFil := df.Filtered("Last Name", "Fultz", "Wiedmann")
 
 	if df.CountRecords() != 10 || dfFil.CountRecords() != 5 {
@@ -249,7 +250,7 @@ func TestFilteredCount(t *testing.T) {
 
 func TestFilteredCheck(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	dfFil := df.Filtered("Last Name", "Fultz", "Wiedmann")
 
 	for _, row := range dfFil.FrameRecords {
@@ -262,7 +263,7 @@ func TestFilteredCheck(t *testing.T) {
 // Ensures changes made in the original dataframe are not also made in a filtered dataframe.
 func TestFilteredChangeToOriginal(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	dfFil := df.Filtered("Last Name", "Fultz", "Wiedmann")
 
 	for _, row := range df.FrameRecords {
@@ -298,7 +299,7 @@ func TestFilteredChangeToOriginal(t *testing.T) {
 func TestGreaterThanOrEqualTo(t *testing.T) {
 	path := "./"
 	value := float64(597)
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	df, err := df.GreaterThanOrEqualTo("Cost", value)
 	if err != nil {
 		t.Error("Greater Than Or Equal To: This should not have failed...")
@@ -321,7 +322,7 @@ func TestGreaterThanOrEqualTo(t *testing.T) {
 func TestLessThanOrEqualTo(t *testing.T) {
 	path := "./"
 	value := float64(436)
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	df, err := df.LessThanOrEqualTo("Weight", value)
 	if err != nil {
 		t.Error("Less Than Or Equal To: This should not have failed...")
@@ -343,7 +344,7 @@ func TestLessThanOrEqualTo(t *testing.T) {
 
 func TestExcludeCount(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	dfExcl := df.Exclude("Last Name", "Fultz", "Wiedmann")
 
 	if df.CountRecords() != 10 || dfExcl.CountRecords() != 5 {
@@ -353,7 +354,7 @@ func TestExcludeCount(t *testing.T) {
 
 func TestExcludeCheck(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	dfExcl := df.Exclude("Last Name", "Fultz", "Wiedmann")
 
 	for _, row := range dfExcl.FrameRecords {
@@ -365,7 +366,7 @@ func TestExcludeCheck(t *testing.T) {
 
 func TestFilteredAfterCount(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	dfFil := df.FilteredAfter("Date", "2022-01-08")
 
 	if df.CountRecords() != 10 || dfFil.CountRecords() != 2 {
@@ -375,7 +376,7 @@ func TestFilteredAfterCount(t *testing.T) {
 
 func TestFilteredAfterCountExcelFormat(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestDataDateFormat.csv")
+	df := CreateDataFrame(path, "data/tests/TestDataDateFormat.csv")
 	dfFil := df.FilteredAfter("Date", "2022-01-08")
 
 	if df.CountRecords() != 10 || dfFil.CountRecords() != 2 {
@@ -385,7 +386,7 @@ func TestFilteredAfterCountExcelFormat(t *testing.T) {
 
 func TestFilteredBeforeCount(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	dfFil := df.FilteredBefore("Date", "2022-01-08")
 
 	if df.CountRecords() != 10 || dfFil.CountRecords() != 7 {
@@ -395,7 +396,7 @@ func TestFilteredBeforeCount(t *testing.T) {
 
 func TestFilteredBeforeCountExcelFormat(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestDataDateFormat.csv")
+	df := CreateDataFrame(path, "data/tests/TestDataDateFormat.csv")
 	dfFil := df.FilteredBefore("Date", "2022-01-08")
 
 	if df.CountRecords() != 10 || dfFil.CountRecords() != 7 {
@@ -405,7 +406,7 @@ func TestFilteredBeforeCountExcelFormat(t *testing.T) {
 
 func TestFilteredBetweenCount(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	dfFil := df.FilteredBetween("Date", "2022-01-02", "2022-01-09")
 
 	if df.CountRecords() != 10 || dfFil.CountRecords() != 6 {
@@ -415,7 +416,7 @@ func TestFilteredBetweenCount(t *testing.T) {
 
 func TestFilteredBetweenExcelFormat(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestDataDateFormat.csv")
+	df := CreateDataFrame(path, "data/tests/TestDataDateFormat.csv")
 	dfFil := df.FilteredBetween("Date", "2022-01-02", "2022-01-09")
 
 	if df.CountRecords() != 10 || dfFil.CountRecords() != 6 {
@@ -425,7 +426,7 @@ func TestFilteredBetweenExcelFormat(t *testing.T) {
 
 func TestRecordCheck(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	var id string
 	var date string
@@ -462,7 +463,7 @@ func TestRecordCheck(t *testing.T) {
 
 func TestRecordCheckPanic(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	for _, row := range df.FrameRecords {
 		defer func() { recover() }()
@@ -476,7 +477,7 @@ func TestRecordCheckPanic(t *testing.T) {
 
 func TestAddRecord(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	newData := [6]string{"11", "2022-06-23", "101", "500", "Ben", "Benison"}
 	df = df.AddRecord(newData[:])
 
@@ -507,8 +508,8 @@ func TestAddRecord(t *testing.T) {
 
 func TestByteOrderMark(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestDataCommaSeparatedValue.csv")
-	dfUtf := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestDataCommaSeparatedValue.csv")
+	dfUtf := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	dfTotal := 0.0
 	for _, row := range df.FrameRecords {
@@ -526,7 +527,7 @@ func TestByteOrderMark(t *testing.T) {
 }
 func TestKeepColumns(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	columns := [3]string{"First Name", "Last Name", "Weight"}
 	df = df.KeepColumns(columns[:])
@@ -538,7 +539,7 @@ func TestKeepColumns(t *testing.T) {
 
 func TestRemoveColumnsMultiple(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	df = df.RemoveColumns("ID", "Cost", "First Name")
 
@@ -549,7 +550,7 @@ func TestRemoveColumnsMultiple(t *testing.T) {
 
 func TestRemoveColumnsSingle(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	df = df.RemoveColumns("First Name")
 
@@ -602,7 +603,7 @@ func TestDateConverterExcelFormatDoubleYearDigit(t *testing.T) {
 
 func TestNewField(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	df.NewField("Middle Name")
 
 	if df.Headers["Middle Name"] != 6 {
@@ -619,7 +620,7 @@ func TestNewField(t *testing.T) {
 
 func TestUnique(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	names := df.Unique("Last Name")
 
 	if len(names) != 7 {
@@ -629,7 +630,7 @@ func TestUnique(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	for _, row := range df.FrameRecords {
 		if row.Val("First Name", df.Headers) == "Avery" && row.Val("Last Name", df.Headers) == "Fultz" {
@@ -648,7 +649,7 @@ func TestUpdate(t *testing.T) {
 
 func TestUpdatePanic(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	for _, row := range df.FrameRecords {
 		if row.Val("First Name", df.Headers) == "Avery" && row.Val("Last Name", df.Headers) == "Fultz" {
@@ -665,12 +666,12 @@ func TestMergeFramesAllColumns(t *testing.T) {
 	path := "./"
 
 	// Prep left frame
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	newData := [6]string{"11", "2022-06-27", "5467", "9586", "Cassandra", "SchmaSandra"}
 	df = df.AddRecord(newData[:])
 
 	// Prep right frame
-	dfRight := CreateDataFrame(path, "TestMergeData.csv")
+	dfRight := CreateDataFrame(path, "data/tests/TestMergeData.csv")
 
 	// Merge
 	df.Merge(&dfRight, "ID")
@@ -712,12 +713,12 @@ func TestMergeFramesSpecifiedColumns(t *testing.T) {
 	path := "./"
 
 	// Prep left frame
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	newData := [6]string{"11", "2022-06-27", "5467", "9586", "Cassandra", "SchmaSandra"}
 	df = df.AddRecord(newData[:])
 
 	// Prep right frame
-	dfRight := CreateDataFrame(path, "TestMergeData.csv")
+	dfRight := CreateDataFrame(path, "data/tests/TestMergeData.csv")
 
 	// Merge
 	df.Merge(&dfRight, "ID", "City", "Postal Code")
@@ -755,10 +756,10 @@ func TestInnerMerge(t *testing.T) {
 	path := "./"
 
 	// Prep left frame
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	// Prep right frame
-	dfRight := CreateDataFrame(path, "TestInnerMergeData.csv")
+	dfRight := CreateDataFrame(path, "data/tests/TestInnerMergeData.csv")
 
 	// Merge
 	df = df.InnerMerge(&dfRight, "ID")
@@ -793,10 +794,10 @@ func TestInnerMergeLeftFrameDuplicates(t *testing.T) {
 	path := "./"
 
 	// Prep left frame
-	df := CreateDataFrame(path, "TestDataInnerDuplicate.csv")
+	df := CreateDataFrame(path, "data/tests/TestDataInnerDuplicate.csv")
 
 	// Prep right frame
-	dfRight := CreateDataFrame(path, "TestInnerMergeData.csv")
+	dfRight := CreateDataFrame(path, "data/tests/TestInnerMergeData.csv")
 
 	// Merge
 	df = df.InnerMerge(&dfRight, "ID")
@@ -830,8 +831,8 @@ func TestInnerMergeLeftFrameDuplicates(t *testing.T) {
 
 func TestConcatFrames(t *testing.T) {
 	path := "./"
-	dfOne := CreateDataFrame(path, "TestData.csv")
-	df := CreateDataFrame(path, "TestDataConcat.csv")
+	dfOne := CreateDataFrame(path, "data/tests/TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestDataConcat.csv")
 
 	lastNames := [20]string{
 		"Fultz",
@@ -882,8 +883,8 @@ func TestConcatFrames(t *testing.T) {
 
 func TestConcatFramesAddress(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
-	df2 := CreateDataFrame(path, "TestDataConcat.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
+	df2 := CreateDataFrame(path, "data/tests/TestDataConcat.csv")
 
 	df3, err := df.ConcatFrames(&df2)
 	if err != nil {
@@ -900,7 +901,7 @@ func TestConcatFramesAddress(t *testing.T) {
 
 func TestConcatFramesColumnCount(t *testing.T) {
 	path := "./"
-	dfOne := CreateDataFrame(path, "TestData.csv")
+	dfOne := CreateDataFrame(path, "data/tests/TestData.csv")
 	columns := []string{"one", "two", "three"}
 	dfTwo := CreateNewDataFrame(columns)
 
@@ -912,7 +913,7 @@ func TestConcatFramesColumnCount(t *testing.T) {
 
 func TestConcatFramesColumnOrder(t *testing.T) {
 	path := "./"
-	dfOne := CreateDataFrame(path, "TestData.csv")
+	dfOne := CreateDataFrame(path, "data/tests/TestData.csv")
 	columns := []string{
 		"ID",
 		"Date",
@@ -933,7 +934,7 @@ func TestConcatFramesColumnOrder(t *testing.T) {
 // it will not affect the records in the newly created filtered version.
 func TestCopiedFrame(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	df2 := df.Filtered("Last Name", "Wiedmann")
 
@@ -956,10 +957,15 @@ func TestCopiedFrame(t *testing.T) {
 
 func TestSaveDataFrame(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	if df.SaveDataFrame(path, "Testing") != true {
 		t.Error("Failed to save dataframe.")
+	}
+
+	t.Logf("Cleaning up %s...", "Testing.csv")
+	if err := os.Remove("Testing.csv"); err != nil {
+		t.Error("Failed to clean up.")
 	}
 }
 
@@ -967,8 +973,8 @@ func TestAssortment(t *testing.T) {
 	path := "./"
 
 	// Concatenate Frames
-	dfOne := CreateDataFrame(path, "TestData.csv")
-	df := CreateDataFrame(path, "TestDataConcat.csv")
+	dfOne := CreateDataFrame(path, "data/tests/TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestDataConcat.csv")
 	df, err := df.ConcatFrames(&dfOne)
 	if err != nil {
 		log.Fatal("Concat Frames: ", err)
@@ -1019,7 +1025,7 @@ func TestAssortment(t *testing.T) {
 
 func TestCopy(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	df2 := df.Copy()
 
 	for _, row := range df2.FrameRecords {
@@ -1062,7 +1068,7 @@ func TestCopy(t *testing.T) {
 
 func TestCopyAddress(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	df2 := df.Copy()
 
 	if &df == &df2 {
@@ -1080,7 +1086,7 @@ func TestColumns(t *testing.T) {
 		"First Name",
 		"Last Name",
 	}
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 	foundColumns := df.Columns()
 
 	if len(foundColumns) != 6 {
@@ -1137,11 +1143,11 @@ func TestAutoSum(t *testing.T) {
 func TestLoadFrames(t *testing.T) {
 	filePath := "./"
 	files := []string{
-		"TestData.csv",
-		"TestDataCommaSeparatedValue.csv",
-		"TestDataConcat.csv",
-		"TestDataDateFormat.csv",
-		"TestMergeData.csv",
+		"data/tests/TestData.csv",
+		"data/tests/TestDataCommaSeparatedValue.csv",
+		"data/tests/TestDataConcat.csv",
+		"data/tests/TestDataDateFormat.csv",
+		"data/tests/TestMergeData.csv",
 	}
 
 	results, err := LoadFrames(filePath, files)
@@ -1179,7 +1185,7 @@ func TestLoadFrames(t *testing.T) {
 
 func TestLoadFramesError(t *testing.T) {
 	filePath := "./"
-	files := []string{"TestData.csv"}
+	files := []string{"data/tests/TestData.csv"}
 
 	_, err := LoadFrames(filePath, files)
 	if err == nil {
@@ -1189,7 +1195,7 @@ func TestLoadFramesError(t *testing.T) {
 
 func TestRename(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	err := df.Rename("Weight", "Total Weight")
 	if err != nil {
@@ -1229,7 +1235,7 @@ func TestRename(t *testing.T) {
 
 func TestRenameOriginalNotFound(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	err := df.Rename("The Weight", "Total Weight")
 	if err == nil {
@@ -1239,7 +1245,7 @@ func TestRenameOriginalNotFound(t *testing.T) {
 
 func TestRenameDuplicate(t *testing.T) {
 	path := "./"
-	df := CreateDataFrame(path, "TestData.csv")
+	df := CreateDataFrame(path, "data/tests/TestData.csv")
 
 	err := df.Rename("Weight", "Cost")
 	if err == nil {

@@ -1,4 +1,4 @@
-module github.com/kfultz07/go-dataframe
+module github.com/datumbrain/go-dataframe
 
 go 1.18
 

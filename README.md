@@ -238,8 +238,3 @@ if err != nil {
     panic(err)
 }
 ```
-
-## Authors
-
-* [Kevin Fultz](https://github.com/kfultz07)
-* [Fahad Siddiqui](https://github.com/fahadsiddiqui)

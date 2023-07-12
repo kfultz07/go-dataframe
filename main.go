@@ -149,6 +149,7 @@ func CreateDataFrameFromCsvReader(reader *csv.Reader) DataFrame {
 // and memory usage needs to be considered. Results are streamed via a channel with a StreamingRecord type.
 func Stream(path, fileName string, c chan StreamingRecord) {
 	defer close(c)
+
 	// Check user entries
 	if path[len(path)-1:] != "/" {
 		path = path + "/"

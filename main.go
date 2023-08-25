@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 type Record struct {
@@ -262,7 +264,7 @@ func (frame DataFrame) RemoveColumns(columns ...string) DataFrame {
 	approvedColumns := []string{}
 
 	for _, col := range frame.Columns() {
-		if !contains(columns, col) {
+		if !slices.Contains(columns, col) {
 			approvedColumns = append(approvedColumns, col)
 		}
 	}
@@ -283,12 +285,12 @@ func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
 	}
 
 	// Check original column name is found in DataFrame
-	if contains(columns, originalColumnName) == false {
+	if !slices.Contains(columns, originalColumnName) {
 		return errors.New("The original column name provided was not found in the DataFrame")
 	}
 
 	// Check new column name does not already exist
-	if contains(columns, newColumnName) == true {
+	if slices.Contains(columns, newColumnName) {
 		return errors.New("The provided new column name already exists in the DataFrame and is not allowed")
 	}
 
@@ -364,7 +366,7 @@ func (frame DataFrame) Filtered(fieldName string, value ...string) DataFrame {
 	newFrame := CreateNewDataFrame(headers)
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		if contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) == true {
+		if slices.Contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) {
 			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
@@ -445,7 +447,7 @@ func (frame DataFrame) Exclude(fieldName string, value ...string) DataFrame {
 	newFrame := CreateNewDataFrame(headers)
 
 	for i := 0; i < len(frame.FrameRecords); i++ {
-		if contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) == false {
+		if !slices.Contains(value, frame.FrameRecords[i].Data[frame.Headers[fieldName]]) {
 			newFrame = newFrame.AddRecord(frame.FrameRecords[i].Data)
 		}
 	}
@@ -545,21 +547,12 @@ func (frame *DataFrame) NewField(fieldName string) {
 	frame.Headers[fieldName] = len(frame.Headers)
 }
 
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-	return false
-}
-
 // Return a slice of all unique values found in a specified field.
 func (frame *DataFrame) Unique(fieldName string) []string {
 	var results []string
 
 	for _, row := range frame.FrameRecords {
-		if contains(results, row.Val(fieldName, frame.Headers)) != true {
+		if !slices.Contains(results, row.Val(fieldName, frame.Headers)) {
 			results = append(results, row.Val(fieldName, frame.Headers))
 		}
 	}
@@ -775,7 +768,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 	// Add approved records to new DataFrame.
 	for i, row := range frame.FrameRecords {
 		currentKey := row.Val(primaryKey, frame.Headers)
-		if contains(approvedPrimaryKeys, currentKey) {
+		if slices.Contains(approvedPrimaryKeys, currentKey) {
 			lData := frame.FrameRecords[i].Data
 			rData := dfRight.FrameRecords[rLookup[currentKey]].Data
 

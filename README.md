@@ -147,6 +147,15 @@ if err != nil {
 }
 ```
 
+# Sort DataFrame
+```go
+// Sort specified column in either ascending or descending order.
+err := df.Sort("Cost", true)
+if err != nil {
+    panic("Sort Error: ", err)
+}
+```
+
 # Add record to DataFrame and later update
 ```go
 // Add a new record

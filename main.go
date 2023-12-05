@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -349,6 +350,25 @@ func (frame DataFrame) Copy() DataFrame {
 		df = df.AddRecord(frame.FrameRecords[i].Data)
 	}
 	return df
+}
+
+func (frame *DataFrame) Sort(fieldName string, ascending bool) error {
+	// Ensure provided column exists.
+	val, ok := frame.Headers[fieldName]
+	if !ok {
+		return errors.New("The provided column to sort does not exist.")
+	}
+
+	if ascending {
+		sort.Slice(frame.FrameRecords, func(i, j int) bool {
+			return frame.FrameRecords[i].Data[val] < frame.FrameRecords[j].Data[val]
+		})
+		return nil
+	}
+	sort.Slice(frame.FrameRecords, func(i, j int) bool {
+		return frame.FrameRecords[i].Data[val] > frame.FrameRecords[j].Data[val]
+	})
+	return nil
 }
 
 // Generates a new filtered DataFrame.

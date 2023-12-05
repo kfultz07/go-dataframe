@@ -1246,3 +1246,117 @@ func TestRenameDuplicate(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestSort(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	err := df.Sort("Cost", true)
+	if err != nil {
+		t.Error("Sort Error Failed")
+	}
+
+	answers := []string{
+		"121",
+		"133",
+		"493",
+		"597",
+		"774",
+		"777",
+		"818",
+		"874",
+		"939",
+		"995",
+	}
+
+	for i, row := range df.FrameRecords {
+		if row.Val("Cost", df.Headers) != answers[i] {
+			t.Error("Ascending Cost Sort Failed")
+		}
+	}
+
+	err = df.Sort("Cost", false)
+	if err != nil {
+		t.Error("Sort Error Failed")
+	}
+
+	answers = []string{
+		"995",
+		"939",
+		"874",
+		"818",
+		"777",
+		"774",
+		"597",
+		"493",
+		"133",
+		"121",
+	}
+
+	for i, row := range df.FrameRecords {
+		if row.Val("Cost", df.Headers) != answers[i] {
+			t.Error("Descending Cost Sort Failed")
+		}
+	}
+
+	err = df.Sort("Last Name", true)
+	if err != nil {
+		t.Error("Sort Error Failed")
+	}
+
+	answers = []string{
+		"Carlson",
+		"Curtis",
+		"Fultz",
+		"Fultz",
+		"Fultz",
+		"Petruska",
+		"Wenck",
+		"Wiedmann",
+		"Wiedmann",
+		"Wilfong",
+	}
+
+	for i, row := range df.FrameRecords {
+		if row.Val("Last Name", df.Headers) != answers[i] {
+			t.Error("Ascending Name Sort Failed")
+		}
+	}
+
+	err = df.Sort("Last Name", false)
+	if err != nil {
+		t.Error("Sort Error Failed")
+	}
+
+	answers = []string{
+		"Wilfong",
+		"Wiedmann",
+		"Wiedmann",
+		"Wenck",
+		"Petruska",
+		"Fultz",
+		"Fultz",
+		"Fultz",
+		"Curtis",
+		"Carlson",
+	}
+
+	for i, row := range df.FrameRecords {
+		if row.Val("Last Name", df.Headers) != answers[i] {
+			t.Error("Descending Name Sort Failed")
+		}
+	}
+
+	if df.CountRecords() != 10 {
+		t.Error("Sort Row Count Failed")
+	}
+
+	if df.Sum("Cost") != 6521.0 {
+		t.Error("Sort Sum Failed")
+	}
+
+	err = df.Sort("Non Existent Column", true)
+	if err == nil {
+		t.Error("Sort Error Failed")
+	}
+}

@@ -352,11 +352,39 @@ func (frame DataFrame) Copy() DataFrame {
 	return df
 }
 
+func (frame DataFrame) NumericColumn(fieldName string) bool {
+	for _, row := range frame.FrameRecords {
+		_, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
+		if err != nil {
+			return false
+		}
+	}
+	return true
+}
+
 func (frame *DataFrame) Sort(fieldName string, ascending bool) error {
 	// Ensure provided column exists.
 	val, ok := frame.Headers[fieldName]
 	if !ok {
 		return errors.New("The provided column to sort does not exist.")
+	}
+
+	// Converts provided value to float64 if column is numeric.
+	if frame.NumericColumn(fieldName) {
+		if ascending {
+			sort.Slice(frame.FrameRecords, func(i, j int) bool {
+				iVal, _ := strconv.ParseFloat(frame.FrameRecords[i].Data[val], 64)
+				jVal, _ := strconv.ParseFloat(frame.FrameRecords[j].Data[val], 64)
+				return iVal < jVal
+			})
+			return nil
+		}
+		sort.Slice(frame.FrameRecords, func(i, j int) bool {
+			iVal, _ := strconv.ParseFloat(frame.FrameRecords[i].Data[val], 64)
+			jVal, _ := strconv.ParseFloat(frame.FrameRecords[j].Data[val], 64)
+			return iVal > jVal
+		})
+		return nil
 	}
 
 	if ascending {

@@ -96,6 +96,15 @@ for row := range c {
 }
 ```
 
+# Divide and Conquer
+A method that breaks a DataFrame down into smaller sub-frames. This functionality enables the user to process data in the sub-frames concurrently utilizing a worker pool or some other concurrent design pattern. The user provides the number of records to include in each sub-frame and the method returns a slice of DataFrames along with an error.
+```go
+frames, err := df.DivideAndConquer(20_000)
+if err != nil {
+    t.Error(err)
+}
+```
+
 # AWS S3 Cloud Storage
 ```go
 // Download a DataFrame from an S3 bucket

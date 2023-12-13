@@ -245,6 +245,59 @@ func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 	return orderedResults, nil
 }
 
+func chunk(rowCount, subGroupSize int) (int, error) {
+	if subGroupSize == 0 {
+		return 0, errors.New("Subgroup size in DivideAndConquer cannot be zero.")
+	}
+	if subGroupSize > rowCount {
+		return 0, errors.New("Subgroup size in DivideAndConquer cannot be greater than size of dataframe.")
+	}
+	if rowCount == 0 {
+		return 0, errors.New("Empty dataframe.")
+	}
+	return rowCount / subGroupSize, nil
+}
+
+// Breaks down a DataFrame into smaller sub-frames to process data concurrently.
+// The subGroupSize are the number of rows each subgroup should have.
+func (frame DataFrame) DivideAndConquer(subGroupSize int) ([]DataFrame, error) {
+	frameSize := frame.CountRecords()
+
+	groups, err := chunk(frameSize, subGroupSize)
+	if err != nil {
+		return []DataFrame{}, err
+	}
+
+	pos := 0
+	var frames []DataFrame
+
+	// Process each subgroup.
+	for groups > 0 {
+		dfNew := CreateNewDataFrame(frame.Columns())
+
+		for i := 0; i < subGroupSize; i++ {
+			dfNew = dfNew.AddRecord(frame.FrameRecords[pos].Data)
+			pos++
+		}
+
+		frames = append(frames, dfNew)
+		groups--
+	}
+
+	// Process all remaining rows.
+	dfNew := CreateNewDataFrame(frame.Columns())
+	for pos < frameSize {
+		dfNew = dfNew.AddRecord(frame.FrameRecords[pos].Data)
+		pos++
+	}
+
+	if dfNew.CountRecords() > 0 {
+		frames = append(frames, dfNew)
+	}
+
+	return frames, nil
+}
+
 // User specifies columns they want to keep from a preexisting DataFrame
 func (frame DataFrame) KeepColumns(columns []string) DataFrame {
 	df := CreateNewDataFrame(columns)

@@ -1360,3 +1360,82 @@ func TestSort(t *testing.T) {
 		t.Error("Sort Error Failed")
 	}
 }
+
+func TestDivideAndConquerOdd(t *testing.T) {
+	df := CreateNewDataFrame([]string{"One", "Two", "Three"})
+
+	total := 0
+	for i := 0; i < 999_833; i++ {
+		total += i
+		iVal := strconv.Itoa(i)
+		df = df.AddRecord([]string{iVal, iVal, iVal})
+	}
+
+	if df.CountRecords() != 999_833 {
+		t.Error("Divide And Conquer: Count rows are incorrect.")
+	}
+
+	frames, err := df.DivideAndConquer(20_000)
+	if err != nil {
+		t.Error("Divide And Conquer: Error incorrectly triggered.")
+	}
+
+	if len(frames) != 50 {
+		t.Errorf("Divide And Conquer: Frame count is '%d' instead of 50.", len(frames))
+	}
+
+	dfTotal := 0
+	for i, each := range frames {
+		if i+1 != len(frames) {
+			if each.CountRecords() != 20_000 {
+				t.Errorf("Divide And Conquer: Row count on subgroup is incorrect '%d'.", each.CountRecords())
+			}
+			dfTotal += int(each.Sum("One"))
+		} else {
+			if each.CountRecords() != 19_833 {
+				t.Errorf("Divide And Conquer: Row count on final subgroup is incorrect '%d'.", each.CountRecords())
+			}
+			dfTotal += int(each.Sum("One"))
+		}
+	}
+
+	if dfTotal != total {
+		t.Errorf("Divide And Conquer: Sum of all rows is incorrect '%d' instead of '%d'.", dfTotal, total)
+	}
+}
+
+func TestDivideAndConquerEven(t *testing.T) {
+	df := CreateNewDataFrame([]string{"One", "Two", "Three"})
+
+	total := 0
+	for i := 0; i < 100_000; i++ {
+		total += i
+		iVal := strconv.Itoa(i)
+		df = df.AddRecord([]string{iVal, iVal, iVal})
+	}
+
+	if df.CountRecords() != 100_000 {
+		t.Error("Divide And Conquer: Count rows are incorrect.")
+	}
+
+	frames, err := df.DivideAndConquer(20_000)
+	if err != nil {
+		t.Error("Divide And Conquer: Error incorrectly triggered.")
+	}
+
+	if len(frames) != 5 {
+		t.Errorf("Divide And Conquer: Frame count is '%d' instead of 5.", len(frames))
+	}
+
+	dfTotal := 0
+	for _, each := range frames {
+		if each.CountRecords() != 20_000 {
+			t.Errorf("Divide And Conquer: Row count on subgroup is incorrect '%d'.", each.CountRecords())
+		}
+		dfTotal += int(each.Sum("One"))
+	}
+
+	if dfTotal != total {
+		t.Errorf("Divide And Conquer: Sum of all rows is incorrect '%d' instead of '%d'.", dfTotal, total)
+	}
+}

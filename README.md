@@ -98,10 +98,33 @@ for row := range c {
 
 # Divide and Conquer
 A method that breaks a DataFrame down into smaller sub-frames. This functionality enables the user to process data in the sub-frames concurrently utilizing a worker pool or some other concurrent design pattern. The user provides the number desired sub-frames and the method returns a slice of DataFrames along with an error.
+
+An average 66% speed improvement was achieved when testing a CSV file with 5M+ rows and four concurrent workers.
 ```go
+// Total values in Charge column and sleep for 5 microseconds to simulate expensive processing.
+func worker(df dataframe.DataFrame, results chan<- string) {
+	total := 0.0
+	for _, row := range df.FrameRecords {
+		total += row.ConvertToFloat("Charge", df.Headers)
+		time.Sleep(time.Microsecond * 5)
+	}
+	results <- fmt.Sprintf("%f", total)
+}
+
+// Create sub-frames using the DivideAndConquer method.
 frames, err := df.DivideAndConquer(5)
 if err != nil {
     panic(err)
+}
+
+// Spin-up worker pool.
+for _, frame := range frames {
+    go worker(frame, results)
+}
+
+// Print results from channel.
+for i := 0; i < numJobs; i++ {
+    fmt.Println(<-results)
 }
 ```
 

@@ -101,7 +101,7 @@ A method that breaks a DataFrame down into smaller sub-frames. This functionalit
 ```go
 frames, err := df.DivideAndConquer(5)
 if err != nil {
-    t.Error(err)
+    panic(err)
 }
 ```
 

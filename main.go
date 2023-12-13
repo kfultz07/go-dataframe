@@ -245,25 +245,26 @@ func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 	return orderedResults, nil
 }
 
-func chunk(rowCount, subGroupSize int) (int, error) {
-	if subGroupSize == 0 {
-		return 0, errors.New("Subgroup size in DivideAndConquer cannot be zero.")
+// Calculates number of records to include in each subframe.
+func getRowsPerSubframe(rowCount, requestedSubFrames int) (int, error) {
+	if requestedSubFrames == 0 {
+		return 0, errors.New("Requested Sub Frames in DivideAndConquer cannot be zero.")
 	}
-	if subGroupSize > rowCount {
-		return 0, errors.New("Subgroup size in DivideAndConquer cannot be greater than size of dataframe.")
+	if requestedSubFrames > rowCount {
+		return 0, errors.New("Requested Sub Frames in DivideAndConquer cannot be greater than size of dataframe.")
 	}
 	if rowCount == 0 {
 		return 0, errors.New("Empty dataframe.")
 	}
-	return rowCount / subGroupSize, nil
+	return rowCount / requestedSubFrames, nil
 }
 
 // Breaks down a DataFrame into smaller sub-frames to process data concurrently.
-// The subGroupSize are the number of rows each subgroup should have.
-func (frame DataFrame) DivideAndConquer(subGroupSize int) ([]DataFrame, error) {
+// RequestedSubFrame parameter provided by the user are the number of subframes they would like returned.
+func (frame DataFrame) DivideAndConquer(requestedSubFrames int) ([]DataFrame, error) {
 	frameSize := frame.CountRecords()
 
-	groups, err := chunk(frameSize, subGroupSize)
+	rowsPerSubframe, err := getRowsPerSubframe(frameSize, requestedSubFrames)
 	if err != nil {
 		return []DataFrame{}, err
 	}
@@ -271,28 +272,24 @@ func (frame DataFrame) DivideAndConquer(subGroupSize int) ([]DataFrame, error) {
 	pos := 0
 	var frames []DataFrame
 
-	// Process each subgroup.
-	for groups > 0 {
+	// Process each subframe.
+	for requestedSubFrames > 0 {
 		dfNew := CreateNewDataFrame(frame.Columns())
 
-		for i := 0; i < subGroupSize; i++ {
-			dfNew = dfNew.AddRecord(frame.FrameRecords[pos].Data)
-			pos++
+		// When on last subframe.
+		if requestedSubFrames == 1 {
+			for pos < frameSize {
+				dfNew = dfNew.AddRecord(frame.FrameRecords[pos].Data)
+				pos++
+			}
+		} else {
+			for i := 0; i < rowsPerSubframe; i++ {
+				dfNew = dfNew.AddRecord(frame.FrameRecords[pos].Data)
+				pos++
+			}
 		}
-
 		frames = append(frames, dfNew)
-		groups--
-	}
-
-	// Process all remaining rows.
-	dfNew := CreateNewDataFrame(frame.Columns())
-	for pos < frameSize {
-		dfNew = dfNew.AddRecord(frame.FrameRecords[pos].Data)
-		pos++
-	}
-
-	if dfNew.CountRecords() > 0 {
-		frames = append(frames, dfNew)
+		requestedSubFrames--
 	}
 
 	return frames, nil

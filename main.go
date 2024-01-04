@@ -659,6 +659,10 @@ func (frame *DataFrame) Unique(fieldName string) []string {
 
 // Stack two DataFrames with matching headers.
 func (frame DataFrame) ConcatFrames(dfNew *DataFrame) (DataFrame, error) {
+	if dfNew == nil {
+		return frame, errors.New("Nil pointer found in ConcatFrames method.")
+	}
+
 	// Check number of columns in each frame match.
 	if len(frame.Headers) != len(dfNew.Headers) {
 		return frame, errors.New("Cannot ConcatFrames as columns do not match.")
@@ -698,7 +702,11 @@ func (frame DataFrame) ConcatFrames(dfNew *DataFrame) (DataFrame, error) {
 
 // Import all columns from right frame into left frame if no columns
 // are provided by the user. Process must be done so in order.
-func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...string) {
+func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...string) error {
+	if dfRight == nil {
+		return errors.New("Nil pointer found in Merge method.")
+	}
+
 	if len(columns) == 0 {
 		for i := 0; i < len(dfRight.Headers); i++ {
 			for k, v := range dfRight.Headers {
@@ -718,7 +726,7 @@ func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...s
 			}
 			// Ensure there are no duplicated columns other than the primary key.
 			if colStatus != true {
-				panic("Merge Error: User provided column not found in right dataframe.")
+				return errors.New("Merge Error: User provided column not found in right dataframe.")
 			}
 		}
 	}
@@ -727,7 +735,7 @@ func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...s
 	for _, col := range columns {
 		for k, _ := range frame.Headers {
 			if col == k && col != primaryKey {
-				panic("The following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
+				return errors.New("The following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
 			}
 		}
 	}
@@ -758,11 +766,16 @@ func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...s
 			}
 		}
 	}
+	return nil
 }
 
 // Performs an inner merge where all columns are consolidated between the two frames but only for records
 // where the specified primary key is found in both frames.
-func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFrame {
+func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) (DataFrame, error) {
+	if dfRight == nil {
+		return frame, errors.New("Nil pointer found in InnerMerge method.")
+	}
+
 	var rightFrameColumns []string
 
 	for i := 0; i < len(dfRight.Headers); i++ {
@@ -800,7 +813,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 	}
 
 	if !lStatus || !rStatus {
-		panic("The specified primary key was not found in both DataFrames.")
+		return frame, errors.New("The specified primary key was not found in both DataFrames.")
 	}
 
 	// Find position of primary key column in right frame.
@@ -815,7 +828,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 	for _, col := range rightFrameColumns {
 		for k, _ := range frame.Headers {
 			if col == k && col != primaryKey {
-				panic("The following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
+				return frame, errors.New("The following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
 			}
 		}
 	}
@@ -885,7 +898,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) DataFra
 			dfNew = dfNew.AddRecord(data)
 		}
 	}
-	return dfNew
+	return dfNew, nil
 }
 
 func (frame *DataFrame) CountRecords() int {

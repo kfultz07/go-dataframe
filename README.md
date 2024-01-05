@@ -231,15 +231,24 @@ dfRight := CreateDataFrame(path, "TestDataRight.csv")
 
 // Merge all columns found in right DataFrame into left DataFrame.
 // User provides the lookup column with the unique values that link the two DataFrames.
-df.Merge(&dfRight, "ID")
+err := df.Merge(&dfRight, "ID")
+if err != nil {
+    panic(err)
+}
 
 // Merge only specified columns from right DataFrame into left DataFrame.
 // User provides columns immediately after the lookup column.
-df.Merge(&dfRight, "ID", "City", "State")
+err := df.Merge(&dfRight, "ID", "City", "State")
+if err != nil {
+    panic(err)
+}
 
 // Inner merge all columns on a specified primary key.
 // Results will only include records where the primary key is found in both DataFrames.
-df = df.InnerMerge(&dfRight, "ID")
+df, err := df.InnerMerge(&dfRight, "ID")
+if err != nil {
+    panic(err)
+}
 ```
 
 # Various Tools

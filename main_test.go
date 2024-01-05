@@ -671,7 +671,10 @@ func TestMergeFramesAllColumns(t *testing.T) {
 	dfRight := CreateDataFrame(path, "TestMergeData.csv")
 
 	// Merge
-	df.Merge(&dfRight, "ID")
+	err := df.Merge(&dfRight, "ID")
+	if err != nil {
+		t.Error(err)
+	}
 
 	if df.CountRecords() != 11 {
 		t.Error("Merge: record count error.")
@@ -718,7 +721,10 @@ func TestMergeFramesSpecifiedColumns(t *testing.T) {
 	dfRight := CreateDataFrame(path, "TestMergeData.csv")
 
 	// Merge
-	df.Merge(&dfRight, "ID", "City", "Postal Code")
+	err := df.Merge(&dfRight, "ID", "City", "Postal Code")
+	if err != nil {
+		t.Error(err)
+	}
 
 	if df.CountRecords() != 11 {
 		t.Error("Merge: record count error.")
@@ -759,7 +765,10 @@ func TestInnerMerge(t *testing.T) {
 	dfRight := CreateDataFrame(path, "TestInnerMergeData.csv")
 
 	// Merge
-	df, _ = df.InnerMerge(&dfRight, "ID")
+	df, err := df.InnerMerge(&dfRight, "ID")
+	if err != nil {
+		t.Error(err)
+	}
 
 	if df.CountRecords() != 5 {
 		t.Error("Inner Merge: record count error.")
@@ -797,7 +806,10 @@ func TestInnerMergeLeftFrameDuplicates(t *testing.T) {
 	dfRight := CreateDataFrame(path, "TestInnerMergeData.csv")
 
 	// Merge
-	df, _ = df.InnerMerge(&dfRight, "ID")
+	df, err := df.InnerMerge(&dfRight, "ID")
+	if err != nil {
+		t.Error(err)
+	}
 
 	if df.CountRecords() != 6 {
 		t.Error("Inner Merge: record count error.")

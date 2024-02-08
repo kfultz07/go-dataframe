@@ -3,6 +3,8 @@ package dataframe
 import (
 	"fmt"
 	"log"
+	"math"
+	"math/rand"
 	"strconv"
 	"testing"
 	"time"
@@ -62,60 +64,60 @@ func TestStreamConvertToFloat(t *testing.T) {
 	}
 }
 
-// func TestDynamicMetrics(t *testing.T) {
-// 	// Create DataFrame
-// 	columns := []string{"Value"}
-// 	df := CreateNewDataFrame(columns)
+func TestDynamicMetrics(t *testing.T) {
+	// Create DataFrame
+	columns := []string{"Value"}
+	df := CreateNewDataFrame(columns)
 
-// 	sum := 0.0
-// 	min := 1
-// 	max := 100
-// 	recordedMax := 0.0
-// 	recordedMin := float64(max) + 1.0
-// 	totalRecords := 1_000_000
+	sum := 0.0
+	min := 1
+	max := 100
+	recordedMax := 0.0
+	recordedMin := float64(max) + 1.0
+	totalRecords := 1_000_000
 
-// 	for i := 0; i < totalRecords; i++ {
-// 		// Ensures differing values generated on each run.
-// 		rand.Seed(time.Now().UnixNano())
-// 		v := float64(rand.Intn(max-min)+min) + rand.Float64()
-// 		sum = sum + v
+	for i := 0; i < totalRecords; i++ {
+		// Ensures differing values generated on each run.
+		rand.Seed(time.Now().UnixNano())
+		v := float64(rand.Intn(max-min)+min) + rand.Float64()
+		sum = sum + v
 
-// 		// Add data to DataFrame
-// 		data := []string{fmt.Sprintf("%f", v)}
-// 		df = df.AddRecord(data)
+		// Add data to DataFrame
+		data := []string{fmt.Sprintf("%f", v)}
+		df = df.AddRecord(data)
 
-// 		if v > recordedMax {
-// 			recordedMax = v
-// 		}
-// 		if v < recordedMin {
-// 			recordedMin = v
-// 		}
-// 	}
+		if v > recordedMax {
+			recordedMax = v
+		}
+		if v < recordedMin {
+			recordedMin = v
+		}
+	}
 
-// 	dataFrameValue := df.Sum("Value")
-// 	dataFrameAvgValue := math.Round(df.Average("Value")*100) / 100
-// 	dataFrameMaxValue := math.Round(df.Max("Value")*100) / 100
-// 	dataFrameMinValue := math.Round(df.Min("Value")*100) / 100
-// 	avg := math.Round(sum/float64(totalRecords)*100) / 100
-// 	recordedMax = math.Round(recordedMax*100) / 100
-// 	recordedMin = math.Round(recordedMin*100) / 100
+	dataFrameValue := df.Sum("Value")
+	dataFrameAvgValue := math.Round(df.Average("Value")*100) / 100
+	dataFrameMaxValue := math.Round(df.Max("Value")*100) / 100
+	dataFrameMinValue := math.Round(df.Min("Value")*100) / 100
+	avg := math.Round(sum/float64(totalRecords)*100) / 100
+	recordedMax = math.Round(recordedMax*100) / 100
+	recordedMin = math.Round(recordedMin*100) / 100
 
-// 	if math.Abs(dataFrameValue-sum) > 0.001 {
-// 		t.Error("Dynamic Metrics: sum float failed", dataFrameValue, sum, math.Abs(dataFrameValue-sum))
-// 	}
-// 	if dataFrameAvgValue != avg {
-// 		t.Error("Dynamic Metrics: average float failed", dataFrameAvgValue, avg)
-// 	}
-// 	if dataFrameMaxValue != recordedMax {
-// 		t.Error("Dynamic Metrics: max value error", dataFrameMaxValue, recordedMax)
-// 	}
-// 	if dataFrameMinValue != recordedMin {
-// 		t.Error("Dynamic Metrics: min value error", dataFrameMinValue, recordedMin)
-// 	}
-// 	if df.CountRecords() != totalRecords {
-// 		t.Error("Dynamic Metrics: count records error", df.CountRecords(), totalRecords)
-// 	}
-// }
+	if math.Abs(dataFrameValue-sum) > 0.001 {
+		t.Error("Dynamic Metrics: sum float failed", dataFrameValue, sum, math.Abs(dataFrameValue-sum))
+	}
+	if dataFrameAvgValue != avg {
+		t.Error("Dynamic Metrics: average float failed", dataFrameAvgValue, avg)
+	}
+	if dataFrameMaxValue != recordedMax {
+		t.Error("Dynamic Metrics: max value error", dataFrameMaxValue, recordedMax)
+	}
+	if dataFrameMinValue != recordedMin {
+		t.Error("Dynamic Metrics: min value error", dataFrameMinValue, recordedMin)
+	}
+	if df.CountRecords() != totalRecords {
+		t.Error("Dynamic Metrics: count records error", df.CountRecords(), totalRecords)
+	}
+}
 
 func TestCreateDataFrameCostFloat(t *testing.T) {
 	path := "./"

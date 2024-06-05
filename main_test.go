@@ -966,11 +966,20 @@ func TestCopiedFrame(t *testing.T) {
 	}
 }
 
-func TestSaveDataFrame(t *testing.T) {
+func TestSaveDataFrameWithoutFileType(t *testing.T) {
 	path := "./"
 	df := CreateDataFrame(path, "TestData.csv")
 
-	if df.SaveDataFrame(path, "Testing") != true {
+	if !df.SaveDataFrame(path, "Testing") {
+		t.Error("Failed to save dataframe.")
+	}
+}
+
+func TestSaveDataFrameWithFileType(t *testing.T) {
+	path := "./"
+	df := CreateDataFrame(path, "TestData.csv")
+
+	if !df.SaveDataFrame(path, "Testing.csv") {
 		t.Error("Failed to save dataframe.")
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -33,7 +34,7 @@ type StreamingRecord struct {
 // Return the value of the specified field.
 func (x StreamingRecord) Val(fieldName string) string {
 	if _, ok := x.Headers[fieldName]; !ok {
-		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
+		panic(fmt.Errorf("provided field '%s' is not a valid field in the dataframe", fieldName))
 	}
 	return x.Data[x.Headers[fieldName]]
 }
@@ -73,18 +74,14 @@ func CreateNewDataFrame(headers []string) DataFrame {
 
 // Generate a new DataFrame sourced from a csv file.
 func CreateDataFrame(path, fileName string) DataFrame {
-	// Check user entries
-	if path[len(path)-1:] != "/" {
-		path = path + "/"
-	}
-	if strings.Contains(fileName, ".csv") != true {
+	if !strings.Contains(fileName, ".csv") {
 		fileName = fileName + ".csv"
 	}
 
 	// Open the CSV file
-	recordFile, err := os.Open(path + fileName)
+	recordFile, err := os.Open(filepath.Join(path, fileName))
 	if err != nil {
-		log.Fatalf("Error opening the file. Please ensure the path and filename are correct. Message: %v", err)
+		log.Fatalf("rror opening the file. Please ensure the path and filename are correct. Message: %v", err)
 	}
 
 	// Setup the reader
@@ -123,10 +120,8 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		// Create new Record
 		x := Record{Data: []string{}}
 
-		// Loop over records and add to Data field of Record struct
-		for _, r := range record {
-			x.Data = append(x.Data, r)
-		}
+		// Add to Data field of Record struct
+		x.Data = append(x.Data, record...)
 		s = append(s, x)
 	}
 	newFrame := DataFrame{FrameRecords: s, Headers: headers}
@@ -138,16 +133,12 @@ func CreateDataFrame(path, fileName string) DataFrame {
 func Stream(path, fileName string, c chan StreamingRecord) {
 	defer close(c)
 
-	// Check user entries
-	if path[len(path)-1:] != "/" {
-		path = path + "/"
-	}
-	if strings.Contains(fileName, ".csv") != true {
+	if !strings.Contains(fileName, ".csv") {
 		fileName = fileName + ".csv"
 	}
 
 	// Open the CSV file
-	recordFile, err := os.Open(path + fileName)
+	recordFile, err := os.Open(filepath.Join(path, fileName))
 	if err != nil {
 		log.Fatalf("Error opening the file. Please ensure the path and filename are correct. Message: %v", err)
 	}
@@ -186,12 +177,9 @@ func Stream(path, fileName string, c chan StreamingRecord) {
 		x := StreamingRecord{Headers: headers}
 
 		// Loop over records and add to Data field of Record struct
-		for _, r := range record {
-			x.Data = append(x.Data, r)
-		}
+		x.Data = append(x.Data, record...)
 		c <- x
 	}
-	return
 }
 
 func worker(jobs <-chan string, results chan<- DataFrame, resultsNames chan<- string, filePath string) {
@@ -238,7 +226,7 @@ func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 	for _, f := range files {
 		val, ok := jobResults[f]
 		if !ok {
-			return []DataFrame{}, errors.New("An error occurred while looking up returned DataFrame in the LoadFrames function.")
+			return []DataFrame{}, errors.New("error occurred while looking up returned DataFrame in the LoadFrames function")
 		}
 		orderedResults = append(orderedResults, val)
 	}
@@ -248,13 +236,13 @@ func LoadFrames(filePath string, files []string) ([]DataFrame, error) {
 // Calculates number of records to include in each subframe.
 func getRowsPerSubframe(rowCount, requestedSubFrames int) (int, error) {
 	if requestedSubFrames == 0 {
-		return 0, errors.New("Requested Sub Frames in DivideAndConquer cannot be zero.")
+		return 0, errors.New("requested Sub Frames in DivideAndConquer cannot be zero")
 	}
 	if requestedSubFrames > rowCount {
-		return 0, errors.New("Requested Sub Frames in DivideAndConquer cannot be greater than size of dataframe.")
+		return 0, errors.New("requested Sub Frames in DivideAndConquer cannot be greater than size of dataframe")
 	}
 	if rowCount == 0 {
-		return 0, errors.New("Empty dataframe.")
+		return 0, errors.New("empty dataframe")
 	}
 	return rowCount / requestedSubFrames, nil
 }
@@ -337,12 +325,12 @@ func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
 
 	// Check original column name is found in DataFrame
 	if !slices.Contains(columns, originalColumnName) {
-		return errors.New("The original column name provided was not found in the DataFrame")
+		return errors.New("the original column name provided was not found in the DataFrame")
 	}
 
 	// Check new column name does not already exist
 	if slices.Contains(columns, newColumnName) {
-		return errors.New("The provided new column name already exists in the DataFrame and is not allowed")
+		return errors.New("the provided new column name already exists in the DataFrame and is not allowed")
 	}
 
 	// Remove original column name
@@ -357,13 +345,8 @@ func (frame *DataFrame) Rename(originalColumnName, newColumnName string) error {
 // Add a new record to the DataFrame
 func (frame DataFrame) AddRecord(newData []string) DataFrame {
 	x := Record{Data: []string{}}
-
-	for _, each := range newData {
-		x.Data = append(x.Data, each)
-	}
-
+	x.Data = append(x.Data, newData...)
 	frame.FrameRecords = append(frame.FrameRecords, x)
-
 	return frame
 }
 
@@ -416,7 +399,7 @@ func (frame *DataFrame) Sort(fieldName string, ascending bool) error {
 	// Ensure provided column exists.
 	val, ok := frame.Headers[fieldName]
 	if !ok {
-		return errors.New("The provided column to sort does not exist.")
+		return errors.New("the provided column to sort does not exist")
 	}
 
 	// Converts provided value to float64 if column is numeric.
@@ -660,12 +643,12 @@ func (frame *DataFrame) Unique(fieldName string) []string {
 // Stack two DataFrames with matching headers.
 func (frame DataFrame) ConcatFrames(dfNew *DataFrame) (DataFrame, error) {
 	if dfNew == nil {
-		return frame, errors.New("Nil pointer found in ConcatFrames method.")
+		return frame, errors.New("nil pointer found in ConcatFrames method")
 	}
 
 	// Check number of columns in each frame match.
 	if len(frame.Headers) != len(dfNew.Headers) {
-		return frame, errors.New("Cannot ConcatFrames as columns do not match.")
+		return frame, errors.New("cannot ConcatFrames as columns do not match")
 	}
 
 	// Check columns in both frames are in the same order.
@@ -689,7 +672,7 @@ func (frame DataFrame) ConcatFrames(dfNew *DataFrame) (DataFrame, error) {
 
 	for i, each := range originalFrame {
 		if each != newFrame[i] {
-			return frame, errors.New("Cannot ConcatFrames as columns are not in the same order.")
+			return frame, errors.New("cannot ConcatFrames as columns are not in the same order")
 		}
 	}
 
@@ -704,7 +687,7 @@ func (frame DataFrame) ConcatFrames(dfNew *DataFrame) (DataFrame, error) {
 // are provided by the user. Process must be done so in order.
 func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...string) error {
 	if dfRight == nil {
-		return errors.New("Nil pointer found in Merge method.")
+		return errors.New("nil pointer found in Merge method")
 	}
 
 	if len(columns) == 0 {
@@ -725,8 +708,8 @@ func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...s
 				}
 			}
 			// Ensure there are no duplicated columns other than the primary key.
-			if colStatus != true {
-				return errors.New("Merge Error: User provided column not found in right dataframe.")
+			if !colStatus {
+				return errors.New("merge Error: User provided column not found in right dataframe")
 			}
 		}
 	}
@@ -735,7 +718,7 @@ func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...s
 	for _, col := range columns {
 		for k, _ := range frame.Headers {
 			if col == k && col != primaryKey {
-				return errors.New("The following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
+				return errors.New("the following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
 			}
 		}
 	}
@@ -773,7 +756,7 @@ func (frame DataFrame) Merge(dfRight *DataFrame, primaryKey string, columns ...s
 // where the specified primary key is found in both frames.
 func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) (DataFrame, error) {
 	if dfRight == nil {
-		return frame, errors.New("Nil pointer found in InnerMerge method.")
+		return frame, errors.New("nil pointer found in InnerMerge method")
 	}
 
 	var rightFrameColumns []string
@@ -813,7 +796,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) (DataFr
 	}
 
 	if !lStatus || !rStatus {
-		return frame, errors.New("The specified primary key was not found in both DataFrames.")
+		return frame, errors.New("the specified primary key was not found in both DataFrames")
 	}
 
 	// Find position of primary key column in right frame.
@@ -912,7 +895,7 @@ func (frame *DataFrame) Sum(fieldName string) float64 {
 	for _, row := range frame.FrameRecords {
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
+			log.Fatalf("could not convert string to float during sum: %v", err)
 		}
 		sum += val
 	}
@@ -938,13 +921,13 @@ func (frame *DataFrame) Max(fieldName string) float64 {
 		if i == 0 {
 			initialMax, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 			if err != nil {
-				log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
+				log.Fatalf("could not convert string to float during sum: %v", err)
 			}
 			maximum = initialMax
 		}
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
+			log.Fatalf("could not convert string to float during sum: %v", err)
 		}
 
 		if val > maximum {
@@ -962,13 +945,13 @@ func (frame *DataFrame) Min(fieldName string) float64 {
 		if i == 0 {
 			initialMin, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 			if err != nil {
-				log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
+				log.Fatalf("could not convert string to float during sum: %v", err)
 			}
 			min = initialMin
 		}
 		val, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			log.Fatalf("Could Not Convert String to Float During Sum: %v", err)
+			log.Fatalf("could not convert string to float during sum: %v", err)
 		}
 
 		if val < min {
@@ -1006,7 +989,7 @@ func (frame *DataFrame) StandardDeviation(fieldName string) (float64, error) {
 	for _, row := range frame.FrameRecords {
 		num, err := strconv.ParseFloat(row.Val(fieldName, frame.Headers), 64)
 		if err != nil {
-			return 0.0, errors.New("Could not convert string to number in specified column to calculate standard deviation.")
+			return 0.0, errors.New("could not convert string to number in specified column to calculate standard deviation")
 		}
 		nums = append(nums, num)
 	}
@@ -1014,12 +997,16 @@ func (frame *DataFrame) StandardDeviation(fieldName string) (float64, error) {
 }
 
 func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
+	if !strings.Contains(fileName, ".csv") {
+		fileName = fileName + ".csv"
+	}
+
 	// Create the csv file
-	csvFile, err := os.Create(path + fileName + ".csv")
-	defer csvFile.Close()
+	csvFile, err := os.Create(filepath.Join(path, fileName))
 	if err != nil {
 		log.Fatalf("Error creating the blank csv file to save the data: %v", err)
 	}
+	defer csvFile.Close()
 
 	w := csv.NewWriter(csvFile)
 	defer w.Flush()
@@ -1055,7 +1042,7 @@ func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
 // Return the value of the specified field.
 func (x Record) Val(fieldName string, headers map[string]int) string {
 	if _, ok := headers[fieldName]; !ok {
-		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
+		panic(fmt.Errorf("the provided field %s is not a valid field in the dataframe", fieldName))
 	}
 	return x.Data[headers[fieldName]]
 }
@@ -1063,7 +1050,7 @@ func (x Record) Val(fieldName string, headers map[string]int) string {
 // Update the value in a specified field.
 func (x Record) Update(fieldName, value string, headers map[string]int) {
 	if _, ok := headers[fieldName]; !ok {
-		panic(fmt.Errorf("The provided field %s is not a valid field in the dataframe.", fieldName))
+		panic(fmt.Errorf("the provided field %s is not a valid field in the dataframe", fieldName))
 	}
 	x.Data[headers[fieldName]] = value
 }
@@ -1072,7 +1059,7 @@ func (x Record) Update(fieldName, value string, headers map[string]int) {
 func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64 {
 	value, err := strconv.ParseFloat(x.Val(fieldName, headers), 64)
 	if err != nil {
-		log.Fatalf("Could Not Convert to float64: %v", err)
+		log.Fatalf("could not convert to float64: %v", err)
 	}
 	return value
 }
@@ -1081,7 +1068,7 @@ func (x Record) ConvertToFloat(fieldName string, headers map[string]int) float64
 func (x Record) ConvertToInt(fieldName string, headers map[string]int) int64 {
 	value, err := strconv.ParseInt(x.Val(fieldName, headers), 0, 64)
 	if err != nil {
-		log.Fatalf("Could Not Convert to int64: %v", err)
+		log.Fatalf("could not convert to int64: %v", err)
 	}
 	return value
 }

@@ -560,42 +560,42 @@ func TestRemoveColumnsSingle(t *testing.T) {
 
 func TestDateConverterStandardFormat(t *testing.T) {
 	var s interface{} = dateConverter("2022-01-31")
-	if _, ok := s.(time.Time); ok != true {
+	if _, ok := s.(time.Time); !ok {
 		t.Error("Date Converter Standard Format Failed")
 	}
 }
 
 func TestDateConverterExcelFormatDoubleDigit(t *testing.T) {
 	var s interface{} = dateConverter("01/31/2022")
-	if _, ok := s.(time.Time); ok != true {
+	if _, ok := s.(time.Time); !ok {
 		t.Error("Date Converter Excel Format Failed")
 	}
 }
 
 func TestDateConverterExcelFormatSingleMonthDigit(t *testing.T) {
 	var s interface{} = dateConverter("1/31/2022")
-	if _, ok := s.(time.Time); ok != true {
+	if _, ok := s.(time.Time); !ok {
 		t.Error("Date Converter Excel Format Failed")
 	}
 }
 
 func TestDateConverterExcelFormatSingleDayDigit(t *testing.T) {
 	var s interface{} = dateConverter("01/1/2022")
-	if _, ok := s.(time.Time); ok != true {
+	if _, ok := s.(time.Time); !ok {
 		t.Error("Date Converter Excel Format Failed")
 	}
 }
 
 func TestDateConverterExcelFormatSingleDigit(t *testing.T) {
 	var s interface{} = dateConverter("1/1/2022")
-	if _, ok := s.(time.Time); ok != true {
+	if _, ok := s.(time.Time); !ok {
 		t.Error("Date Converter Excel Format Failed")
 	}
 }
 
 func TestDateConverterExcelFormatDoubleYearDigit(t *testing.T) {
 	var s interface{} = dateConverter("01/31/22")
-	if _, ok := s.(time.Time); ok != true {
+	if _, ok := s.(time.Time); !ok {
 		t.Error("Date Converter Excel Format Failed")
 	}
 }
@@ -1031,7 +1031,7 @@ func TestAssortment(t *testing.T) {
 				status = true
 			}
 		}
-		if status != true {
+		if !status {
 			t.Error("Assortment: last name not found.")
 		}
 	}
@@ -1240,7 +1240,7 @@ func TestRename(t *testing.T) {
 		}
 	}
 
-	if newColumnStatus != true {
+	if !newColumnStatus {
 		t.Error("New column was not found")
 	}
 	if len(foundColumns) != 6 {

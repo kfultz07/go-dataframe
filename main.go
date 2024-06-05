@@ -43,7 +43,7 @@ func (x StreamingRecord) Val(fieldName string) string {
 func (x StreamingRecord) ConvertToFloat(fieldName string) float64 {
 	value, err := strconv.ParseFloat(x.Val(fieldName), 64)
 	if err != nil {
-		log.Fatalf("Could Not Convert to float64: %v", err)
+		log.Fatalf("could not convert to float64: %v", err)
 	}
 	return value
 }
@@ -52,7 +52,7 @@ func (x StreamingRecord) ConvertToFloat(fieldName string) float64 {
 func (x StreamingRecord) ConvertToInt(fieldName string) int64 {
 	value, err := strconv.ParseInt(x.Val(fieldName), 0, 64)
 	if err != nil {
-		log.Fatalf("Could Not Convert to int64: %v", err)
+		log.Fatalf("could not convert to int64: %v", err)
 	}
 	return value
 }
@@ -81,7 +81,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Open the CSV file
 	recordFile, err := os.Open(filepath.Join(path, fileName))
 	if err != nil {
-		log.Fatalf("rror opening the file. Please ensure the path and filename are correct. Message: %v", err)
+		log.Fatalf("error opening file: please ensure the path and filename are correct: %v", err)
 	}
 
 	// Setup the reader
@@ -90,7 +90,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Read the records
 	header, err := reader.Read()
 	if err != nil {
-		log.Fatalf("Error reading the records: %v", err)
+		log.Fatalf("error reading the records: %v", err)
 	}
 
 	// Remove Byte Order Marker for UTF-8 files
@@ -115,7 +115,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			log.Fatalf("Error in record loop: %v", err)
+			log.Fatalf("error in record loop: %v", err)
 		}
 		// Create new Record
 		x := Record{Data: []string{}}
@@ -140,7 +140,7 @@ func Stream(path, fileName string, c chan StreamingRecord) {
 	// Open the CSV file
 	recordFile, err := os.Open(filepath.Join(path, fileName))
 	if err != nil {
-		log.Fatalf("Error opening the file. Please ensure the path and filename are correct. Message: %v", err)
+		log.Fatalf("error opening the file: please ensure the path and filename are correct: %v", err)
 	}
 
 	// Setup the reader
@@ -149,7 +149,7 @@ func Stream(path, fileName string, c chan StreamingRecord) {
 	// Read the records
 	header, err := reader.Read()
 	if err != nil {
-		log.Fatalf("Error reading the records: %v", err)
+		log.Fatalf("error reading the records: %v", err)
 	}
 
 	// Remove Byte Order Marker for UTF-8 files
@@ -171,7 +171,7 @@ func Stream(path, fileName string, c chan StreamingRecord) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			log.Fatalf("Error in record loop: %v", err)
+			log.Fatalf("error in record loop: %v", err)
 		}
 		// Create new Record
 		x := StreamingRecord{Headers: headers}
@@ -811,7 +811,7 @@ func (frame DataFrame) InnerMerge(dfRight *DataFrame, primaryKey string) (DataFr
 	for _, col := range rightFrameColumns {
 		for k, _ := range frame.Headers {
 			if col == k && col != primaryKey {
-				return frame, errors.New("The following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
+				return frame, errors.New("the following column is duplicated in both frames and is not the specified primary key which is not allowed: " + col)
 			}
 		}
 	}
@@ -1004,7 +1004,7 @@ func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
 	// Create the csv file
 	csvFile, err := os.Create(filepath.Join(path, fileName))
 	if err != nil {
-		log.Fatalf("Error creating the blank csv file to save the data: %v", err)
+		log.Fatalf("error creating the blank csv file to save the data: %v", err)
 	}
 	defer csvFile.Close()
 
@@ -1093,7 +1093,7 @@ func dateConverter(dateString string) time.Time {
 
 	value, err := time.Parse("2006-01-02", dateString)
 	if err != nil {
-		log.Fatalf("Could Not Convert to time.Time: %v", err)
+		log.Fatalf("could not convert to time.Time: %v", err)
 	}
 	return value
 }

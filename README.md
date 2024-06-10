@@ -137,7 +137,10 @@ bucketName := "BucketName" // Name of the bucket
 bucketRegion := "BucketRegion" // Can be found in the Properties tab in the S3 console (ex. us-west-1)
 awsAccessKey := "AwsAccessKey" // Access keys can be loaded from environment variables within you program
 awsSecretKey := "AwsSecretKey"
-df := CreateDataFrameFromAwsS3(path, fileName, bucketName, bucketRegion, awsAccessKey, awsSecretKey)
+df, err := CreateDataFrameFromAwsS3(path, fileName, bucketName, bucketRegion, awsAccessKey, awsSecretKey)
+if err != nil {
+    panic(err)
+}
 
 // Upload a file to an S3 bucket
 err := UploadFileToAwsS3(path, fileName, bucket, region)

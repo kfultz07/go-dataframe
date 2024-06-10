@@ -3,7 +3,6 @@ package dataframe
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,28 +13,22 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-func CreateDataFrameFromAwsS3(path, item, bucket, region, awsAccessKey, awsSecretKey string) DataFrame {
-	// Prechecks
-	if strings.Contains(item, ".csv") != true {
-		panic("AWS S3: only CSV files are currently supported.")
-	}
-	if len(path) == 0 {
-		panic("AWS S3: you must provide a path")
-	}
-	if len(item) == 0 {
-		panic("AWS S3: you must provide a file name")
-	}
-	if len(bucket) == 0 {
-		panic("AWS S3: you must provide a bucket name")
-	}
-	if len(region) == 0 {
-		panic("AWS S3: you must provide a region")
-	}
-	if len(awsAccessKey) == 0 {
-		panic("AWS S3: you must provide an access key")
-	}
-	if len(awsSecretKey) == 0 {
-		panic("AWS S3: you must provide a secret key")
+func CreateDataFrameFromAwsS3(path, item, bucket, region, awsAccessKey, awsSecretKey string) (DataFrame, error) {
+	switch {
+	case !strings.Contains(item, ".csv"):
+		return DataFrame{}, errors.New("create dataframe from aws s3: only csv files are currently supported")
+	case len(path) == 0:
+		return DataFrame{}, errors.New("create dataframe from aws s3: must provide a path")
+	case len(item) == 0:
+		return DataFrame{}, errors.New("create dataframe from aws s3: must provide a file name")
+	case len(bucket) == 0:
+		return DataFrame{}, errors.New("create dataframe from aws s3: must provide a bucket name")
+	case len(region) == 0:
+		return DataFrame{}, errors.New("create dataframe from aws s3: must provide a region")
+	case len(awsAccessKey) == 0:
+		return DataFrame{}, errors.New("create dataframe from aws s3: must provide an access key")
+	case len(awsSecretKey) == 0:
+		return DataFrame{}, errors.New("create dataframe from aws s3: must provide a secret key")
 	}
 
 	// Set environment variables.
@@ -43,14 +36,16 @@ func CreateDataFrameFromAwsS3(path, item, bucket, region, awsAccessKey, awsSecre
 	os.Setenv("AWS_SECRET_KEY", awsSecretKey)
 
 	// Create path.
-	filePath, _ := filepath.Abs(path + item)
+	filePath, err := filepath.Abs(path + item)
+	if err != nil {
+		return DataFrame{}, err
+	}
 
 	// Create file.
 	file, err := os.Create(filePath)
 	if err != nil {
-		log.Fatalf("AWS S3: Error creating the file --> %v", err)
+		return DataFrame{}, fmt.Errorf("create dataframe from aws s3: error creating the file '%s'", err)
 	}
-
 	defer file.Close()
 
 	// Initialize an AWS session.
@@ -58,26 +53,22 @@ func CreateDataFrameFromAwsS3(path, item, bucket, region, awsAccessKey, awsSecre
 		Region: aws.String(region)},
 	)
 	if err != nil {
-		log.Fatalf("AWS S3: Error initializing session --> %v", err)
+		return DataFrame{}, errors.New("create dataframe from aws s3: error initializing session")
 	}
 
 	// Download file from AWS
 	downloader := s3manager.NewDownloader(sess)
 
-	numBytes, err := downloader.Download(file,
-		&s3.GetObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String(item),
-		})
+	numBytes, err := downloader.Download(file, &s3.GetObjectInput{Bucket: aws.String(bucket), Key: aws.String(item)})
 	if err != nil {
-		log.Fatalf("AWS S3: Error downloading the file --> %v", err)
+		return DataFrame{}, fmt.Errorf("create dataframe from aws s3: error downloading file '%s'", err)
 	}
 
 	fmt.Println("Downloaded", file.Name(), numBytes, "bytes")
 
 	df := CreateDataFrame(path, item)
 
-	return df
+	return df, nil
 }
 
 func UploadFileToAwsS3(path, filename, bucket, region string) error {
@@ -87,11 +78,9 @@ func UploadFileToAwsS3(path, filename, bucket, region string) error {
 	}
 
 	// Initialize an AWS session.
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region)},
-	)
+	sess, err := session.NewSession(&aws.Config{Region: aws.String(region)})
 	if err != nil {
-		log.Fatalf("AWS S3: Error initializing session --> %v", err)
+		return fmt.Errorf("upload file to s3: error initializing session '%s'", err)
 	}
 
 	// Create an uploader with the session and default options
@@ -99,18 +88,17 @@ func UploadFileToAwsS3(path, filename, bucket, region string) error {
 
 	f, err := os.Open(path + filename)
 	if err != nil {
-		return errors.New("Failed to open file.")
+		return errors.New("upload file to s3: failed to open file")
 	}
 
 	// Upload the file to S3.
-	result, err := uploader.Upload(&s3manager.UploadInput{
+	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(filename),
 		Body:   f,
 	})
 	if err != nil {
-		return errors.New("Failed to upload file to AWS S3")
+		return errors.New("upload file to s3: failed to upload file to aws s3")
 	}
-	fmt.Printf("File successfully uploaded to, %s\n", aws.StringValue(&result.Location))
 	return nil
 }

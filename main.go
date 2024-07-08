@@ -155,6 +155,11 @@ func Stream(path, fileName string, c chan StreamingRecord) {
 	// Remove Byte Order Marker for UTF-8 files
 	for i, each := range header {
 		byteSlice := []byte(each)
+
+		if len(byteSlice) < 3 {
+			continue
+		}
+
 		if byteSlice[0] == 239 && byteSlice[1] == 187 && byteSlice[2] == 191 {
 			header[i] = each[3:]
 		}

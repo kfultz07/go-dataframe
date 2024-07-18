@@ -74,7 +74,7 @@ func CreateNewDataFrame(headers []string) DataFrame {
 
 // Generate a new DataFrame sourced from a csv file.
 func CreateDataFrame(path, fileName string) DataFrame {
-	if !strings.Contains(fileName, ".csv") {
+	if !strings.Contains(fileName, ".csv") && !strings.Contains(fileName, ".CSV") {
 		fileName = fileName + ".csv"
 	}
 
@@ -138,7 +138,7 @@ func CreateDataFrame(path, fileName string) DataFrame {
 func Stream(path, fileName string, c chan StreamingRecord) {
 	defer close(c)
 
-	if !strings.Contains(fileName, ".csv") {
+	if !strings.Contains(fileName, ".csv") && !strings.Contains(fileName, ".CSV") {
 		fileName = fileName + ".csv"
 	}
 
@@ -1007,7 +1007,7 @@ func (frame *DataFrame) StandardDeviation(fieldName string) (float64, error) {
 }
 
 func (frame *DataFrame) SaveDataFrame(path, fileName string) bool {
-	if !strings.Contains(fileName, ".csv") {
+	if !strings.Contains(fileName, ".csv") && !strings.Contains(fileName, ".CSV") {
 		fileName = fileName + ".csv"
 	}
 

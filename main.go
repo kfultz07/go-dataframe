@@ -1,6 +1,7 @@
 package dataframe
 
 import (
+	"bytes"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -87,6 +88,20 @@ func CreateDataFrame(path, fileName string) DataFrame {
 	// Setup the reader
 	reader := csv.NewReader(recordFile)
 
+	return CreateDataFrameFromCsvReader(reader)
+}
+
+// Generate a new DataFrame sourced from an array of bytes containing csv data.
+func CreateDataFrameFromBytes(b []byte) DataFrame {
+	// Setup the reader
+	reader := csv.NewReader(bytes.NewReader(b))
+
+	return CreateDataFrameFromCsvReader(reader)
+
+}
+
+// Generate a new DataFrame sourced from a csv reader.
+func CreateDataFrameFromCsvReader(reader *csv.Reader) DataFrame {
 	// Read the records
 	header, err := reader.Read()
 	if err != nil {

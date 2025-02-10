@@ -326,11 +326,11 @@ func (frame DataFrame) BulkUploadMySql(rowsPerBatch int, tableColumns []string, 
 	}
 
 	var cnt int
-	var bulkData [][]interface{}
+	bulkData := [][]interface{}{}
 	bar := progressbar.Default(int64(len(frame.FrameRecords)))
 
 	for _, row := range frame.FrameRecords {
-		var data []interface{}
+		data := []interface{}{}
 		for _, colData := range frameColumns {
 			data = append(data, row.Val(colData, frame.Headers))
 		}

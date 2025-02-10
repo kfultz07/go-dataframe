@@ -326,6 +326,7 @@ func (frame DataFrame) BulkUploadMySql(db *sql.DB, rowsPerBatch int, tableColumn
 		}
 		bulkData = append(bulkData, data)
 		bar.Add(1)
+		cnt++
 
 		if cnt == rowsPerBatch {
 			if err := insertRows(db, bulkData, table, tableColumns); err != nil {

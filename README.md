@@ -44,7 +44,7 @@ Bulk insert rows into an MySQL database. The rowsPerBatch indicates the threshol
 rowsPerBatch := 1000
 tableColumns := []string{"col_1", "col_2", "col_3"}
 
-if err := df.BulkUploadMySql(1000, tableColumns, "username", "password", "host", "database", "table_name"); err != nil {
+if err := df.BulkUploadMySql(db, 1000, tableColumns, "table_name"); err != nil {
     return log.Fatal(err)
 }
 ```

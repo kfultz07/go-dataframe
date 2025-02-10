@@ -295,17 +295,7 @@ func (frame DataFrame) DivideAndConquer(requestedSubFrames int) ([]DataFrame, er
 	return frames, nil
 }
 
-func (frame DataFrame) BulkUploadMySql(rowsPerBatch int, tableColumns []string, user, password, host, database, table string) error {
-	if len(user) == 0 || len(password) == 0 || len(host) == 0 || len(database) == 0 {
-		return errors.New("bulk upload error: invalid credentials")
-	}
-
-	db, err := sql.Open("mysql", user+":"+password+"@tcp("+host+")/"+database)
-	if err != nil {
-		return fmt.Errorf("bulk upload error: could not connect to database: %v", err)
-	}
-	defer db.Close()
-
+func (frame DataFrame) BulkUploadMySql(db *sql.DB, rowsPerBatch int, tableColumns []string, table string) error {
 	if db == nil {
 		return errors.New("bulk upload error: database nil pointer")
 	}

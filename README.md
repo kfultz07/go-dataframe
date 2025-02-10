@@ -38,6 +38,17 @@ for _, row := range df.FrameRecords {
 df.SaveDataFrame(path, "NewFileName")
 ```
 
+# Bulk Upload to MySQL Database
+Bulk insert rows into an MySql database. The rowsPerBatch indicates the threshold of rows to be inserted in each batch. The columns slice must contain the same columns (in the same order) as are found in the table being uploaded to.
+```go
+rowsPerBatch := 1000
+columns := []string{"col_1", "col_2", "col_3"}
+
+if err := df.BulkUploadMySql(1000, columns, "username", "password", "host", "database", "table_name"); err != nil {
+    return log.Fatal(err)
+}
+```
+
 # Concurrently load multiple CSV files into DataFrames
 Tests performed utilized four files with a total of 5,746,452 records and a varing number of columns. Results indicated an average total load time of 8.81 seconds when loaded sequentially and 4.06 seconds when loaded concurrently utilizing the LoadFrames function. An overall 54% speed improvement. Files must all be in the same directory. Results are returned in a
 slice in the same order as provided in the files parameter.

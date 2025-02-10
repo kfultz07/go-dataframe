@@ -1,6 +1,7 @@
 package dataframe
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	progressbar "github.com/schollz/progressbar/v3"
 	"golang.org/x/exp/slices"
 )
 
@@ -291,6 +293,103 @@ func (frame DataFrame) DivideAndConquer(requestedSubFrames int) ([]DataFrame, er
 	}
 
 	return frames, nil
+}
+
+func (frame DataFrame) BulkUploadMySql(rowsPerBatch int, columns []string, user, password, host, database, table string) error {
+	if len(user) == 0 || len(password) == 0 || len(host) == 0 || len(database) == 0 {
+		return errors.New("bulk upload error: invalid credentials")
+	}
+
+	db, err := sql.Open("mysql", user+":"+password+"@tcp("+host+")/"+database)
+	if err != nil {
+		return fmt.Errorf("bulk upload error: could not connect to database: %v", err)
+	}
+	defer db.Close()
+
+	if db == nil {
+		return errors.New("bulk upload error: database nil pointer")
+	}
+	if rowsPerBatch < 1 {
+		rowsPerBatch = 1000
+	}
+	if len(columns) == 0 {
+		return errors.New("bulk upload error: must provide columns")
+	}
+	if len(table) == 0 {
+		return errors.New("bulk upload error: must provide a table name")
+	}
+
+	var cnt int
+	var bulkData [][]interface{}
+	bar := progressbar.Default(int64(len(frame.FrameRecords)))
+
+	for _, row := range frame.FrameRecords {
+		var data []interface{}
+		for _, colData := range columns {
+			data = append(data, row.Val(colData, frame.Headers))
+		}
+		bulkData = append(bulkData, data)
+		bar.Add(1)
+
+		if cnt == rowsPerBatch {
+			if err := insertRows(db, bulkData, table, columns); err != nil {
+				return fmt.Errorf("bulk upload error: inserting records: %v", err)
+			}
+			cnt = 0
+			bulkData = nil
+		}
+	}
+
+	// Insert remaining rows that did not hit upload threshold.
+	if len(bulkData) > 0 {
+		if err := insertRows(db, bulkData, table, columns); err != nil {
+			return fmt.Errorf("bulk upload error: inserting records: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// Bulk insert rows into a specified table.
+func insertRows(db *sql.DB, bulkData [][]interface{}, table string, columns []string) error {
+	sqlStr := "INSERT INTO `" + table + "`("
+
+	// Add all columns to the SQL statement.
+	for _, col := range columns {
+		sqlStr += "`" + col + "`,"
+	}
+	// Trim the end to remove comma and add additional SQL.
+	sqlStr = sqlStr[0:len(sqlStr)-1] + ") VALUES "
+
+	vals := []interface{}{}
+
+	for _, data := range bulkData {
+		sqlStr += "("
+
+		// Add "?," for each of the columns.
+		for i := 0; i < len(columns); i++ {
+			sqlStr += "?,"
+		}
+		// Trim comma at the end.
+		sqlStr = sqlStr[0 : len(sqlStr)-1]
+
+		sqlStr += "),"
+		vals = append(vals, data...)
+	}
+
+	// Trim the end to remove comma.
+	sqlStr = sqlStr[0 : len(sqlStr)-1]
+
+	stmt, err := db.Prepare(sqlStr)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(vals...)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	return nil
 }
 
 // User specifies columns they want to keep from a preexisting DataFrame

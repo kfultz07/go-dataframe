@@ -39,12 +39,12 @@ df.SaveDataFrame(path, "NewFileName")
 ```
 
 # Bulk Upload to MySQL Database
-Bulk insert rows into an MySql database. The rowsPerBatch indicates the threshold of rows to be inserted in each batch. The tableColumns slice must contain the same columns (in the same order) as are found in the table being uploaded to.
+Bulk insert rows into an MySQL database. The rowsPerBatch indicates the threshold of rows to be inserted in each batch. The tableColumns slice must contain the same columns (in the same order) as are found in the MySQL table being uploaded to.
 ```go
 rowsPerBatch := 1000
-columns := []string{"col_1", "col_2", "col_3"}
+tableColumns := []string{"col_1", "col_2", "col_3"}
 
-if err := df.BulkUploadMySql(1000, columns, "username", "password", "host", "database", "table_name"); err != nil {
+if err := df.BulkUploadMySql(1000, tableColumns, "username", "password", "host", "database", "table_name"); err != nil {
     return log.Fatal(err)
 }
 ```

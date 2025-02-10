@@ -295,7 +295,7 @@ func (frame DataFrame) DivideAndConquer(requestedSubFrames int) ([]DataFrame, er
 	return frames, nil
 }
 
-func (frame DataFrame) BulkUploadMySql(rowsPerBatch int, columns []string, user, password, host, database, table string) error {
+func (frame DataFrame) BulkUploadMySql(rowsPerBatch int, tableColumns []string, user, password, host, database, table string) error {
 	if len(user) == 0 || len(password) == 0 || len(host) == 0 || len(database) == 0 {
 		return errors.New("bulk upload error: invalid credentials")
 	}
@@ -312,11 +312,17 @@ func (frame DataFrame) BulkUploadMySql(rowsPerBatch int, columns []string, user,
 	if rowsPerBatch < 1 {
 		rowsPerBatch = 1000
 	}
-	if len(columns) == 0 {
+	if len(tableColumns) == 0 {
 		return errors.New("bulk upload error: must provide columns")
 	}
 	if len(table) == 0 {
 		return errors.New("bulk upload error: must provide a table name")
+	}
+
+	frameColumns := frame.Columns()
+
+	if len(tableColumns) != len(frameColumns) {
+		return errors.New("bulk upload error: the provided columns do not match dataframe")
 	}
 
 	var cnt int
@@ -325,14 +331,14 @@ func (frame DataFrame) BulkUploadMySql(rowsPerBatch int, columns []string, user,
 
 	for _, row := range frame.FrameRecords {
 		var data []interface{}
-		for _, colData := range columns {
+		for _, colData := range frameColumns {
 			data = append(data, row.Val(colData, frame.Headers))
 		}
 		bulkData = append(bulkData, data)
 		bar.Add(1)
 
 		if cnt == rowsPerBatch {
-			if err := insertRows(db, bulkData, table, columns); err != nil {
+			if err := insertRows(db, bulkData, table, tableColumns); err != nil {
 				return fmt.Errorf("bulk upload error: inserting records: %v", err)
 			}
 			cnt = 0
@@ -342,7 +348,7 @@ func (frame DataFrame) BulkUploadMySql(rowsPerBatch int, columns []string, user,
 
 	// Insert remaining rows that did not hit upload threshold.
 	if len(bulkData) > 0 {
-		if err := insertRows(db, bulkData, table, columns); err != nil {
+		if err := insertRows(db, bulkData, table, tableColumns); err != nil {
 			return fmt.Errorf("bulk upload error: inserting records: %v", err)
 		}
 	}
